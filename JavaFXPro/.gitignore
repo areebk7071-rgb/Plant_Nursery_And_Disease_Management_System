@@ -1,0 +1,29 @@
+# Maven build output
+target/
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+*.classpath
+*.project
+.settings/
+
+# macOS metadata
+.DS_Store
+__MACOSX/
+._*
+
+# Runtime-generated data files (these are recreated on first launch)
+users.csv
+treatment_records.csv
+
+# Keep sample data tracked, but not personal user data
+# plants.csv  ← intentionally tracked as sample seed data
+# diseases.csv ← intentionally tracked as seed data
+
+# Log files
+*.log
+
+# Compiled Java class files (not needed — Maven handles this)
+*.class

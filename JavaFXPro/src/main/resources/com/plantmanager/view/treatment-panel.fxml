@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.plantmanager.controller.TreatmentPanelController"
+      spacing="12" VBox.vgrow="ALWAYS">
+
+    <padding>
+        <Insets top="4" right="4" bottom="4" left="4"/>
+    </padding>
+
+    <Label text="Treatment Tracker" styleClass="section-title"/>
+    <Label text="Apply treatments, rate effectiveness, and manage all active care plans"
+           styleClass="chart-hint"/>
+
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <!-- Reminders list -->
+        <VBox spacing="8" prefWidth="420" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label text="Treatment Reminders" styleClass="subsection-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="All active treatments" styleClass="chart-hint"/>
+            </HBox>
+            <ListView fx:id="reminderListView" VBox.vgrow="ALWAYS" styleClass="reminder-list"/>
+        </VBox>
+
+        <!-- Detail panel -->
+        <VBox spacing="10" prefWidth="480" HBox.hgrow="ALWAYS" styleClass="insights-panel">
+            <Label fx:id="detailTitleLabel" text="Select a treatment reminder" styleClass="subsection-title"/>
+            <Label fx:id="progressLabel" styleClass="field-label"/>
+            <Label fx:id="applicationsLabel" styleClass="field-label"/>
+            <Label fx:id="statusLabel" styleClass="field-label"/>
+
+            <Label text="Treatment plan" styleClass="subsection-title"/>
+            <TextArea fx:id="treatmentDetailArea" editable="false" wrapText="true"
+                      prefRowCount="8" VBox.vgrow="ALWAYS"/>
+
+            <Label fx:id="recommendationLabel" wrapText="true" styleClass="chart-detail-label"/>
+
+            <Label text="Rate effectiveness (can save before completing)" styleClass="subsection-title"/>
+            <ComboBox fx:id="effectivenessCombo" promptText="Select rating..." maxWidth="Infinity"/>
+
+            <HBox spacing="10">
+                <Button fx:id="applyTreatmentButton" text="Apply Treatment"
+                        onAction="#handleApplyTreatment" styleClass="primary-button"/>
+                <Button fx:id="saveRatingButton" text="Save Rating"
+                        onAction="#handleSaveRating" styleClass="secondary-button"/>
+                <Button fx:id="completeButton" text="Complete Treatment"
+                        onAction="#handleComplete" styleClass="secondary-button"/>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>
