@@ -1,6 +1,0 @@
-id,name,species,plantedDate,plantType,assignedDiseaseName,expectedYield,harvestPeriod,bloomColor,isPerennial,culinaryUse,isMedicinal,imageRef
-1,Tomato,Solanum lycopersicum,2024-04-15,FruitPlant,None,5.0,Summer,,,,,file:plant-images/1_tomato.jpg
-2,Rose,Rosa rubiginosa,2023-03-10,FlowerPlant,None,,,Pink,true,,,builtin:rose
-3,Basil,Ocimum basilicum,2024-05-01,HerbPlant,None,,,,,"""""""""""""""Italian cuisine, pesto""""""""""""""",false,builtin:herb
-4,Apple Tree,Malus domestica,2022-09-20,FruitPlant,Aphid Infestation,50.0,Autumn,,,,,builtin:fruit
-5,Aloe Vera,Aloe vera,2026-06-10,FlowerPlant,Aphid Infestation,,,Mixed,false,,,builtin:flower
