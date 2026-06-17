@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.plantmanager.controller.DashboardController"
+            fitToWidth="true" styleClass="dashboard-scroll">
+
+    <VBox spacing="20" styleClass="dashboard-root">
+        <padding>
+            <Insets top="20" right="24" bottom="24" left="24"/>
+        </padding>
+
+        <VBox spacing="4">
+            <Label text="Garden Health Dashboard" styleClass="dashboard-heading"/>
+            <Label text="Real-time overview of your plants, health status, and disease trends"
+                   styleClass="dashboard-subheading"/>
+        </VBox>
+
+        <!-- Treatment reminders (top priority) -->
+        <VBox spacing="10" styleClass="treatment-reminders-panel">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label text="Treatment Reminders" styleClass="section-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="reminderCountLabel" text="0 plants need care" styleClass="chart-hint"/>
+            </HBox>
+            <VBox fx:id="treatmentRemindersBox" spacing="8"/>
+        </VBox>
+
+        <!-- KPI Cards -->
+        <HBox fx:id="kpiCardsBox" spacing="16">
+            <VBox styleClass="kpi-card kpi-total" HBox.hgrow="ALWAYS">
+                <Label text="Total Plants" styleClass="kpi-label"/>
+                <Label fx:id="totalPlantsValue" text="0" styleClass="kpi-value"/>
+            </VBox>
+            <VBox styleClass="kpi-card kpi-healthy" HBox.hgrow="ALWAYS">
+                <Label text="Healthy" styleClass="kpi-label"/>
+                <Label fx:id="healthyPlantsValue" text="0" styleClass="kpi-value"/>
+            </VBox>
+            <VBox styleClass="kpi-card kpi-diseased" HBox.hgrow="ALWAYS">
+                <Label text="Needs Treatment" styleClass="kpi-label"/>
+                <Label fx:id="diseasedPlantsValue" text="0" styleClass="kpi-value"/>
+            </VBox>
+            <VBox styleClass="kpi-card kpi-score" HBox.hgrow="ALWAYS">
+                <Label text="Health Score" styleClass="kpi-label"/>
+                <Label fx:id="healthScoreValue" text="0%" styleClass="kpi-value"/>
+            </VBox>
+            <VBox styleClass="kpi-card kpi-library" HBox.hgrow="ALWAYS">
+                <Label text="Disease Library" styleClass="kpi-label"/>
+                <Label fx:id="diseaseLibraryValue" text="0" styleClass="kpi-value"/>
+            </VBox>
+        </HBox>
+
+        <!-- Charts (populated in controller) -->
+        <VBox fx:id="chartsContainer" spacing="16"/>
+
+        <!-- Insights -->
+        <VBox spacing="10" styleClass="insights-panel">
+            <Label text="Insights &amp; Recommendations" styleClass="subsection-title"/>
+            <ListView fx:id="insightsList" prefHeight="160" styleClass="insights-list"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

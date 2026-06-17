@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.plantmanager.controller.MainController"
+            prefHeight="780" prefWidth="1200"
+            styleClass="app-root">
+
+    <top>
+        <VBox spacing="0">
+            <HBox styleClass="app-header" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets top="14" right="24" bottom="14" left="24"/>
+                </padding>
+                <VBox spacing="2">
+                    <Label text="Botanical Treatment Advisor" styleClass="app-title"/>
+                    <Label text="Track plants  •  Manage diseases  •  View treatments" styleClass="app-tagline"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="userLabel" styleClass="header-user"/>
+                <Label fx:id="statusLabel" styleClass="header-status"/>
+            </HBox>
+
+            <MenuBar styleClass="app-menu">
+            <Menu text="File">
+                <MenuItem fx:id="exportMenuItem" text="Export CSV..." onAction="#handleExport"/>
+                <MenuItem fx:id="exportPdfMenuItem" text="Export PDF Report..." onAction="#handleExportPdf"/>
+                <Menu text="Share via QR Code">
+                    <MenuItem fx:id="shareCsvQrMenuItem" text="Share Plants CSV..." onAction="#handleShareCsvQr"/>
+                    <MenuItem fx:id="sharePdfQrMenuItem" text="Share PDF Report..." onAction="#handleSharePdfQr"/>
+                </Menu>
+                <SeparatorMenuItem/>
+                    <MenuItem fx:id="logoutMenuItem" text="Log Out" onAction="#handleLogout"/>
+                    <MenuItem fx:id="exitMenuItem" text="Exit" onAction="#handleExit"/>
+                </Menu>
+                <Menu text="Help">
+                    <MenuItem fx:id="aboutMenuItem" text="About" onAction="#handleAbout"/>
+                </Menu>
+            </MenuBar>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="12" styleClass="main-content-wrapper" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="14" right="20" bottom="14" left="20"/>
+            </padding>
+
+            <!-- Custom navigation bar -->
+            <HBox spacing="10" styleClass="nav-bar" alignment="CENTER">
+                <fx:define>
+                    <ToggleGroup fx:id="navGroup"/>
+                </fx:define>
+
+                <ToggleButton fx:id="navDashboard" toggleGroup="$navGroup"
+                              styleClass="nav-btn" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <HBox spacing="14" alignment="CENTER_LEFT" styleClass="nav-btn-inner">
+                            <Label text="📊" styleClass="nav-icon"/>
+                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                <Label text="Dashboard" styleClass="nav-title"/>
+                                <Label text="Charts and insights" styleClass="nav-sub"/>
+                            </VBox>
+                        </HBox>
+                    </graphic>
+                </ToggleButton>
+
+                <ToggleButton fx:id="navPlants" toggleGroup="$navGroup"
+                              styleClass="nav-btn" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <HBox spacing="14" alignment="CENTER_LEFT" styleClass="nav-btn-inner">
+                            <Label text="🌱" styleClass="nav-icon"/>
+                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                <Label text="Plants" styleClass="nav-title"/>
+                                <Label text="Catalog and care" styleClass="nav-sub"/>
+                            </VBox>
+                        </HBox>
+                    </graphic>
+                </ToggleButton>
+
+                <ToggleButton fx:id="navDiseases" toggleGroup="$navGroup"
+                              styleClass="nav-btn" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <HBox spacing="14" alignment="CENTER_LEFT" styleClass="nav-btn-inner">
+                            <Label text="🔬" styleClass="nav-icon"/>
+                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                <Label text="Diseases" styleClass="nav-title"/>
+                                <Label text="Library and treatments" styleClass="nav-sub"/>
+                            </VBox>
+                        </HBox>
+                    </graphic>
+                </ToggleButton>
+
+                <ToggleButton fx:id="navTreatments" toggleGroup="$navGroup"
+                              styleClass="nav-btn" maxWidth="Infinity" HBox.hgrow="ALWAYS">
+                    <graphic>
+                        <HBox spacing="14" alignment="CENTER_LEFT" styleClass="nav-btn-inner">
+                            <Label text="💊" styleClass="nav-icon"/>
+                            <VBox spacing="2" alignment="CENTER_LEFT">
+                                <Label text="Treatments" styleClass="nav-title"/>
+                                <Label text="Track and rate" styleClass="nav-sub"/>
+                            </VBox>
+                        </HBox>
+                    </graphic>
+                </ToggleButton>
+            </HBox>
+
+            <!-- Content panels -->
+            <StackPane fx:id="contentStack" styleClass="content-panel" VBox.vgrow="ALWAYS">
+
+                <VBox fx:id="dashboardPanel">
+                    <fx:include fx:id="dashboard" source="dashboard-view.fxml"/>
+                </VBox>
+
+                <VBox fx:id="plantsPanel" visible="false" spacing="12">
+                    <padding>
+                        <Insets top="4" right="4" bottom="4" left="4"/>
+                    </padding>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Plant Catalog" styleClass="section-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Search:" styleClass="field-label"/>
+                        <TextField fx:id="searchField" promptText="Name, species, disease..."
+                                   prefWidth="280" HBox.hgrow="NEVER"/>
+                    </HBox>
+                    <TableView fx:id="plantTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colImage" text="" prefWidth="56" sortable="false"/>
+                            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                            <TableColumn fx:id="colName" text="Name" prefWidth="130"/>
+                            <TableColumn fx:id="colSpecies" text="Species" prefWidth="180"/>
+                            <TableColumn fx:id="colType" text="Type" prefWidth="90"/>
+                            <TableColumn fx:id="colDisease" text="Assigned Disease" prefWidth="160"/>
+                            <TableColumn fx:id="colPlantedDate" text="Planted" prefWidth="110"/>
+                            <TableColumn fx:id="colHealth" text="Health" prefWidth="100"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+
+                <VBox fx:id="diseasesPanel" visible="false" spacing="12">
+                    <padding>
+                        <Insets top="4" right="4" bottom="4" left="4"/>
+                    </padding>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Disease Library" styleClass="section-title" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="addDiseaseButton" text="+ Add Disease" onAction="#handleAddDisease"
+                                styleClass="primary-button"/>
+                    </HBox>
+                    <HBox spacing="16" VBox.vgrow="ALWAYS">
+                        <ListView fx:id="diseaseListView" prefWidth="280" HBox.hgrow="NEVER"/>
+                        <VBox spacing="10" HBox.hgrow="ALWAYS">
+                            <Label text="Disease Details" styleClass="subsection-title"/>
+                            <TextArea fx:id="diseaseDetailArea" editable="false" wrapText="true"
+                                      VBox.vgrow="ALWAYS"/>
+                            <Button fx:id="viewTreatmentButton" text="View Treatment Plan"
+                                    onAction="#handleViewTreatment" styleClass="primary-button"
+                                    maxWidth="220"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <VBox fx:id="treatmentsPanel" visible="false">
+                    <fx:include fx:id="treatmentPanel" source="treatment-panel.fxml"/>
+                </VBox>
+            </StackPane>
+        </VBox>
+    </center>
+
+    <bottom>
+        <VBox spacing="6" styleClass="action-bar">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <padding>
+                    <Insets top="10" right="20" bottom="10" left="20"/>
+                </padding>
+                <Button fx:id="addButton" text="+ Add Plant" onAction="#handleAddPlant" styleClass="primary-button"/>
+                <Button fx:id="editButton" text="Edit" onAction="#handleEditPlant" styleClass="secondary-button"/>
+                <Button fx:id="deleteButton" text="Delete" onAction="#handleDeletePlant" styleClass="secondary-button"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="assignButton" text="Assign Disease" onAction="#handleAssignDisease"
+                        styleClass="secondary-button"/>
+                <Button fx:id="showTreatmentButton" text="Show Treatment" onAction="#handleShowTreatment"
+                        styleClass="secondary-button"/>
+                <Button fx:id="trackTreatmentButton" text="Track Treatment" onAction="#handleTrackTreatment"
+                        styleClass="secondary-button"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="treatmentReminderLabel" styleClass="reminder-label"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>
