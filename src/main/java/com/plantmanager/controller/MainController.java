@@ -274,10 +274,15 @@ public class MainController {
 
     private void showPanel(VBox panel) {
         dashboardPanel.setVisible(false);
+        dashboardPanel.setManaged(false);
         plantsPanel.setVisible(false);
+        plantsPanel.setManaged(false);
         diseasesPanel.setVisible(false);
+        diseasesPanel.setManaged(false);
         treatmentsPanel.setVisible(false);
+        treatmentsPanel.setManaged(false);
         panel.setVisible(true);
+        panel.setManaged(true);
     }
 
     private void updateActionBarForView(javafx.scene.control.Toggle toggle) {
@@ -297,6 +302,11 @@ public class MainController {
         if (!plantsView) {
             treatmentReminderLabel.setText("");
         }
+        System.out.println("[DEBUG] updateActionBarForView called. plantsView=" + plantsView
+                + " addButton.isVisible=" + addButton.isVisible()
+                + " addButton.isManaged=" + addButton.isManaged()
+                + " addButton.getParent()=" + addButton.getParent()
+                + " addButton width/height=" + addButton.getWidth() + "/" + addButton.getHeight());
     }
 
     private void setupTable() {

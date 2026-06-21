@@ -1,59 +1,112 @@
 package com.plantmanager.repository;
 
-import com.plantmanager.model.Plant;
 import com.plantmanager.model.TreatmentEffectiveness;
 import com.plantmanager.model.TreatmentRecord;
 import com.plantmanager.model.TreatmentStatus;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Performs full CRUD (Create, Read, Update, Delete) for treatment records
+ * against the SQLite {@code treatment_records} table via JDBC.
+ */
 public class TreatmentRecordRepository {
 
-    private static final Path FILE = Paths.get("treatment_records.csv");
-
+    /** READ — loads every treatment record from the database. */
     public ObservableList<TreatmentRecord> load() throws IOException {
-        if (!Files.exists(FILE)) {
-            return FXCollections.observableArrayList();
-        }
-
-        List<TreatmentRecord> records = new ArrayList<>();
-        try (BufferedReader reader = Files.newBufferedReader(FILE)) {
-            String header = reader.readLine();
-            if (header == null) {
-                return FXCollections.observableArrayList();
-            }
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) {
-                    continue;
-                }
-                TreatmentRecord record = parseLine(line);
-                if (record != null) {
-                    records.add(record);
+        try {
+            Connection conn = DatabaseManager.getConnection();
+            List<TreatmentRecord> records = new ArrayList<>();
+            String sql = "SELECT id, plant_id, plant_name, plant_type, disease_name, treatment_name, " +
+                    "duration_days, start_date, end_date, status, effectiveness, applications_count " +
+                    "FROM treatment_records ORDER BY id";
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    records.add(mapRow(rs));
                 }
             }
+            return FXCollections.observableArrayList(records);
+        } catch (SQLException e) {
+            throw new IOException("Failed to load treatment records from database", e);
         }
-        return FXCollections.observableArrayList(records);
     }
 
+    /**
+     * CREATE/UPDATE (bulk) — replaces the entire treatment_records table with the given list,
+     * matching the existing controller workflow (load once, save the full list after each change).
+     */
     public void save(ObservableList<TreatmentRecord> records) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(FILE)) {
-            writer.write(getHeader());
-            writer.newLine();
-            for (TreatmentRecord record : records) {
-                writer.write(toCsvRow(record));
-                writer.newLine();
+        String upsert = "INSERT INTO treatment_records " +
+                "(id, plant_id, plant_name, plant_type, disease_name, treatment_name, duration_days, " +
+                "start_date, end_date, status, effectiveness, applications_count) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT(id) DO UPDATE SET " +
+                "plant_id=excluded.plant_id, plant_name=excluded.plant_name, plant_type=excluded.plant_type, " +
+                "disease_name=excluded.disease_name, treatment_name=excluded.treatment_name, " +
+                "duration_days=excluded.duration_days, start_date=excluded.start_date, " +
+                "end_date=excluded.end_date, status=excluded.status, effectiveness=excluded.effectiveness, " +
+                "applications_count=excluded.applications_count";
+
+        try {
+            Connection conn = DatabaseManager.getConnection();
+            conn.setAutoCommit(false);
+            try {
+                try (PreparedStatement del = conn.prepareStatement(buildDeleteMissingSql(records))) {
+                    int i = 1;
+                    for (TreatmentRecord r : records) {
+                        del.setInt(i++, r.getId());
+                    }
+                    del.executeUpdate();
+                }
+
+                try (PreparedStatement stmt = conn.prepareStatement(upsert)) {
+                    for (TreatmentRecord r : records) {
+                        stmt.setInt(1, r.getId());
+                        stmt.setInt(2, r.getPlantId());
+                        stmt.setString(3, r.getPlantName());
+                        stmt.setString(4, r.getPlantType());
+                        stmt.setString(5, r.getDiseaseName());
+                        stmt.setString(6, r.getTreatmentName());
+                        stmt.setInt(7, r.getTreatmentDurationDays());
+                        stmt.setString(8, r.getStartDate().toString());
+                        stmt.setString(9, r.getEndDate() != null ? r.getEndDate().toString() : null);
+                        stmt.setString(10, r.getStatus().name());
+                        stmt.setString(11, r.getEffectiveness().name());
+                        stmt.setInt(12, r.getApplicationsCount());
+                        stmt.addBatch();
+                    }
+                    stmt.executeBatch();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
+        } catch (SQLException e) {
+            throw new IOException("Failed to save treatment records to database", e);
+        }
+    }
+
+    /** DELETE — removes a single treatment record by id. */
+    public void deleteRecord(int recordId) throws IOException {
+        String sql = "DELETE FROM treatment_records WHERE id = ?";
+        try (PreparedStatement stmt = DatabaseManager.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, recordId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new IOException("Failed to delete treatment record " + recordId, e);
         }
     }
 
@@ -61,51 +114,32 @@ public class TreatmentRecordRepository {
         return records.stream().mapToInt(TreatmentRecord::getId).max().orElse(0) + 1;
     }
 
-    public static String getHeader() {
-        return "id,plantId,plantName,plantType,diseaseName,treatmentName,treatmentDurationDays," +
-                "startDate,endDate,status,effectiveness,applicationsCount";
-    }
-
-    private TreatmentRecord parseLine(String line) {
-        try {
-            String[] p = CsvUtils.parseLine(line);
-            if (p.length < 12) {
-                return null;
-            }
-            TreatmentRecord record = new TreatmentRecord(
-                    Integer.parseInt(p[0].trim()),
-                    Integer.parseInt(p[1].trim()),
-                    p[2].trim(),
-                    p[3].trim(),
-                    p[4].trim(),
-                    p[5].trim(),
-                    Integer.parseInt(p[6].trim()),
-                    LocalDate.parse(p[7].trim()),
-                    TreatmentStatus.fromString(p[9].trim())
-            );
-            if (!p[8].trim().isEmpty()) {
-                record.setEndDate(LocalDate.parse(p[8].trim()));
-            }
-            record.setEffectiveness(TreatmentEffectiveness.fromString(p[10].trim()));
-            record.setApplicationsCount(Integer.parseInt(p[11].trim()));
-            return record;
-        } catch (RuntimeException e) {
-            return null;
+    private String buildDeleteMissingSql(ObservableList<TreatmentRecord> records) {
+        if (records.isEmpty()) {
+            return "DELETE FROM treatment_records WHERE 1=0";
         }
+        String placeholders = String.join(",", records.stream().map(r -> "?").toList());
+        return "DELETE FROM treatment_records WHERE id NOT IN (" + placeholders + ")";
     }
 
-    private String toCsvRow(TreatmentRecord r) {
-        return r.getId() + "," +
-                r.getPlantId() + "," +
-                CsvUtils.quote(r.getPlantName()) + "," +
-                CsvUtils.quote(r.getPlantType()) + "," +
-                CsvUtils.quote(r.getDiseaseName()) + "," +
-                CsvUtils.quote(r.getTreatmentName()) + "," +
-                r.getTreatmentDurationDays() + "," +
-                r.getStartDate() + "," +
-                (r.getEndDate() != null ? r.getEndDate() : "") + "," +
-                r.getStatus().name() + "," +
-                r.getEffectiveness().name() + "," +
-                r.getApplicationsCount();
+    private TreatmentRecord mapRow(ResultSet rs) throws SQLException {
+        TreatmentRecord record = new TreatmentRecord(
+                rs.getInt("id"),
+                rs.getInt("plant_id"),
+                rs.getString("plant_name"),
+                rs.getString("plant_type"),
+                rs.getString("disease_name"),
+                rs.getString("treatment_name"),
+                rs.getInt("duration_days"),
+                LocalDate.parse(rs.getString("start_date")),
+                TreatmentStatus.fromString(rs.getString("status"))
+        );
+        String endDate = rs.getString("end_date");
+        if (endDate != null && !endDate.isBlank()) {
+            record.setEndDate(LocalDate.parse(endDate));
+        }
+        record.setEffectiveness(TreatmentEffectiveness.fromString(rs.getString("effectiveness")));
+        record.setApplicationsCount(rs.getInt("applications_count"));
+        return record;
     }
 }

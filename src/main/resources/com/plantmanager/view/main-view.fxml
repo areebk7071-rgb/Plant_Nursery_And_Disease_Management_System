@@ -115,7 +115,7 @@
                     <fx:include fx:id="dashboard" source="dashboard-view.fxml"/>
                 </VBox>
 
-                <VBox fx:id="plantsPanel" visible="false" spacing="12">
+                <VBox fx:id="plantsPanel" visible="false" managed="false" spacing="12">
                     <padding>
                         <Insets top="4" right="4" bottom="4" left="4"/>
                     </padding>
@@ -140,7 +140,7 @@
                     </TableView>
                 </VBox>
 
-                <VBox fx:id="diseasesPanel" visible="false" spacing="12">
+                <VBox fx:id="diseasesPanel" visible="false" managed="false" spacing="12">
                     <padding>
                         <Insets top="4" right="4" bottom="4" left="4"/>
                     </padding>
@@ -162,7 +162,7 @@
                     </HBox>
                 </VBox>
 
-                <VBox fx:id="treatmentsPanel" visible="false">
+                <VBox fx:id="treatmentsPanel" visible="false" managed="false">
                     <fx:include fx:id="treatmentPanel" source="treatment-panel.fxml"/>
                 </VBox>
             </StackPane>
