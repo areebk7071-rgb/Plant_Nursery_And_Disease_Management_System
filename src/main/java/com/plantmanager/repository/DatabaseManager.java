@@ -1,5 +1,7 @@
 package com.plantmanager.repository;
 
+import com.plantmanager.dao.DatabaseInitializer;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -87,6 +89,20 @@ public final class DatabaseManager {
                 )
             """);
 
+            // PLANT_DISEASES junction table — links plants to diseases (many-to-many capable)
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS plant_diseases (
+                    plant_id      INTEGER NOT NULL,
+                    disease_name  TEXT NOT NULL,
+                    assigned_at   TEXT DEFAULT (datetime('now')),
+                    PRIMARY KEY (plant_id, disease_name),
+                    FOREIGN KEY (plant_id) REFERENCES plants(id)
+                        ON DELETE CASCADE ON UPDATE CASCADE,
+                    FOREIGN KEY (disease_name) REFERENCES diseases(name)
+                        ON DELETE CASCADE ON UPDATE CASCADE
+                )
+            """);
+
             // TREATMENT_RECORDS table — treatment history per plant
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS treatment_records (
@@ -107,6 +123,7 @@ public final class DatabaseManager {
                 )
             """);
         }
+        DatabaseInitializer.initialize();
     }
 
     /** Closes the shared connection. Call on application shutdown if desired. */

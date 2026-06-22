@@ -78,9 +78,7 @@ public class MainController {
     @FXML private Button viewTreatmentButton;
     @FXML private Button addDiseaseButton;
 
-    @FXML private MenuItem exportMenuItem;
     @FXML private MenuItem exportPdfMenuItem;
-    @FXML private MenuItem shareCsvQrMenuItem;
     @FXML private MenuItem sharePdfQrMenuItem;
     @FXML private MenuItem logoutMenuItem;
     @FXML private MenuItem exitMenuItem;
@@ -302,11 +300,6 @@ public class MainController {
         if (!plantsView) {
             treatmentReminderLabel.setText("");
         }
-        System.out.println("[DEBUG] updateActionBarForView called. plantsView=" + plantsView
-                + " addButton.isVisible=" + addButton.isVisible()
-                + " addButton.isManaged=" + addButton.isManaged()
-                + " addButton.getParent()=" + addButton.getParent()
-                + " addButton width/height=" + addButton.getWidth() + "/" + addButton.getHeight());
     }
 
     private void setupTable() {
@@ -582,28 +575,9 @@ public class MainController {
     }
 
     @FXML
-    private void handleExport() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Export Plants CSV");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-        chooser.setInitialFileName("plants_backup.csv");
-
-        Stage stage = (Stage) plantTable.getScene().getWindow();
-        java.io.File file = chooser.showSaveDialog(stage);
-        if (file != null) {
-            try {
-                repository.exportPlants(plants, Path.of(file.toURI()));
-                statusLabel.setText("Exported CSV: " + file.getName());
-            } catch (IOException e) {
-                showError("Export Failed", e.getMessage());
-            }
-        }
-    }
-
-    @FXML
     private void handleExportPdf() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Export Garden Health Report (PDF)");
+        chooser.setTitle("Export Garden Health Report (Live Database)");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
         chooser.setInitialFileName("garden_health_report.pdf");
 
@@ -615,25 +589,11 @@ public class MainController {
                 path = Path.of(path + ".pdf");
             }
             try {
-                PdfReportService.exportGardenReport(plants, path);
-                statusLabel.setText("Exported PDF: " + path.getFileName());
+                PdfReportService.exportGardenReportFromDatabase(path);
+                statusLabel.setText("Exported live database PDF: " + path.getFileName());
             } catch (IOException e) {
                 showError("PDF Export Failed", e.getMessage());
             }
-        }
-    }
-
-    @FXML
-    private void handleShareCsvQr() {
-        Stage stage = (Stage) plantTable.getScene().getWindow();
-        try {
-            Path temp = Files.createTempFile("plants_share_", ".csv");
-            temp.toFile().deleteOnExit();
-            repository.exportPlants(plants, temp);
-            QrShareService.shareFile(temp, "plants.csv", stage);
-            statusLabel.setText("QR share ready for plants.csv");
-        } catch (Exception e) {
-            showError("QR Share Failed", e.getMessage());
         }
     }
 
@@ -643,9 +603,9 @@ public class MainController {
         try {
             Path temp = Files.createTempFile("garden_report_", ".pdf");
             temp.toFile().deleteOnExit();
-            PdfReportService.exportGardenReport(plants, temp);
-            QrShareService.shareFile(temp, "garden_health_report.pdf", stage);
-            statusLabel.setText("QR share ready for PDF report");
+            PdfReportService.exportGardenReportFromDatabase(temp);
+            QrShareService.shareDatabasePdf(temp, stage);
+            statusLabel.setText("QR share ready — live database PDF");
         } catch (Exception e) {
             showError("QR Share Failed", e.getMessage());
         }
@@ -678,7 +638,9 @@ public class MainController {
                 Demonstrates OOP: encapsulation, inheritance,
                 polymorphism, and abstraction.
 
-                Data stored in plants.csv (no database required).
+                Data is stored in a local SQLite database
+                (botanical_treatment_advisor.db). PDF reports and
+                QR sharing compile data directly from the live database.
                 """);
         about.showAndWait();
     }

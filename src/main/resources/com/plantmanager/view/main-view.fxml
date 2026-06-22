@@ -26,11 +26,9 @@
 
             <MenuBar styleClass="app-menu">
             <Menu text="File">
-                <MenuItem fx:id="exportMenuItem" text="Export CSV..." onAction="#handleExport"/>
-                <MenuItem fx:id="exportPdfMenuItem" text="Export PDF Report..." onAction="#handleExportPdf"/>
+                <MenuItem fx:id="exportPdfMenuItem" text="Export Database PDF Report..." onAction="#handleExportPdf"/>
                 <Menu text="Share via QR Code">
-                    <MenuItem fx:id="shareCsvQrMenuItem" text="Share Plants CSV..." onAction="#handleShareCsvQr"/>
-                    <MenuItem fx:id="sharePdfQrMenuItem" text="Share PDF Report..." onAction="#handleSharePdfQr"/>
+                    <MenuItem fx:id="sharePdfQrMenuItem" text="Share Live Database PDF..." onAction="#handleSharePdfQr"/>
                 </Menu>
                 <SeparatorMenuItem/>
                     <MenuItem fx:id="logoutMenuItem" text="Log Out" onAction="#handleLogout"/>

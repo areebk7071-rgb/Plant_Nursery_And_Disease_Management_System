@@ -1,7 +1,6 @@
 package com.plantmanager.service;
 
 import com.plantmanager.model.Disease;
-import com.plantmanager.model.DiseaseLibrary;
 import com.plantmanager.model.Plant;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -31,13 +30,27 @@ public final class PdfReportService {
     private PdfReportService() {
     }
 
+    /**
+     * Builds a garden health PDF by querying the live SQLite database.
+     * Used by export and QR-share flows so the data sheet always reflects current DB state.
+     */
+    public static void exportGardenReportFromDatabase(Path destination) throws IOException {
+        GardenReportQueryService.GardenReportSnapshot snapshot = new GardenReportQueryService().fetchSnapshot();
+        exportGardenReport(snapshot.plants(), snapshot.diseases(), destination);
+    }
+
     public static void exportGardenReport(List<Plant> plants, Path destination) throws IOException {
+        exportGardenReport(plants, List.of(), destination);
+    }
+
+    public static void exportGardenReport(List<Plant> plants, List<Disease> diseases, Path destination)
+            throws IOException {
         try (PDDocument document = new PDDocument()) {
             PageWriter writer = new PageWriter(document);
             writeTitlePage(writer, plants);
             writePlantCatalog(writer, plants);
             writeTreatmentSection(writer, plants);
-            writeDiseaseLibrarySummary(writer);
+            writeDiseaseLibrarySummary(writer, diseases);
             writer.close();
             document.save(destination.toFile());
         }
@@ -46,6 +59,7 @@ public final class PdfReportService {
     private static void writeTitlePage(PageWriter w, List<Plant> plants) throws IOException {
         w.drawTitle("Garden Health Report");
         w.drawSubtitle("Botanical Treatment Advisor");
+        w.drawText("Source: live SQLite database", 10, false);
         w.drawText("Generated: " + LocalDateTime.now().format(DATE_FMT), 12, false);
         w.space(20);
 
@@ -132,10 +146,10 @@ public final class PdfReportService {
         }
     }
 
-    private static void writeDiseaseLibrarySummary(PageWriter w) throws IOException {
+    private static void writeDiseaseLibrarySummary(PageWriter w, List<Disease> diseases) throws IOException {
         w.ensureSpace(50);
-        w.drawSection("Disease Library (" + DiseaseLibrary.getAll().size() + " entries)");
-        for (var disease : DiseaseLibrary.getAll()) {
+        w.drawSection("Disease Library (" + diseases.size() + " entries)");
+        for (var disease : diseases) {
             w.ensureSpace(LINE_HEIGHT + 2);
             w.drawText("• " + disease.getName() + " — " + disease.getCausativeAgent(), 10, false);
         }

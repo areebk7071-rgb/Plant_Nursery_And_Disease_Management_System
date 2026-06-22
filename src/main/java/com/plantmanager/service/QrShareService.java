@@ -14,6 +14,7 @@ import java.nio.file.Path;
 
 /**
  * Shows a QR code dialog pointing to a temporary local download URL.
+ * Database-backed PDF reports are generated from SQLite before sharing.
  */
 public final class QrShareService {
 
@@ -22,10 +23,24 @@ public final class QrShareService {
     private QrShareService() {
     }
 
+    public static void shareDatabasePdf(Path pdfFile, Stage owner) throws Exception {
+        shareFile(pdfFile, "garden_health_report.pdf",
+                "Live Database PDF Report",
+                "This PDF was compiled from the current SQLite plant and disease records.",
+                owner);
+    }
+
     public static void shareFile(Path file, String downloadFileName, Stage owner) throws Exception {
+        shareFile(file, downloadFileName, "Share via QR Code",
+                "Scan with your phone camera. Your phone must be on the same Wi-Fi as this computer.",
+                owner);
+    }
+
+    private static void shareFile(Path file, String downloadFileName, String dialogTitle,
+                                  String hintText, Stage owner) throws Exception {
         stopActiveServer();
         activeServer = LocalFileShareServer.start(file, downloadFileName);
-        showDialog(owner, activeServer.getDownloadUrl(), downloadFileName);
+        showDialog(owner, activeServer.getDownloadUrl(), downloadFileName, dialogTitle, hintText);
     }
 
     public static void stopActiveServer() {
@@ -35,12 +50,12 @@ public final class QrShareService {
         }
     }
 
-    private static void showDialog(Stage owner, String url, String fileName) throws Exception {
-        Label title = new Label("Scan to download: " + fileName);
+    private static void showDialog(Stage owner, String url, String fileName,
+                                   String dialogTitle, String hintText) throws Exception {
+        Label title = new Label(dialogTitle + ": " + fileName);
         title.getStyleClass().add("section-title");
 
-        Label hint = new Label(
-                "Scan with your phone camera. Your phone must be on the same Wi-Fi as this computer.");
+        Label hint = new Label(hintText);
         hint.getStyleClass().add("chart-hint");
         hint.setWrapText(true);
 
@@ -70,7 +85,7 @@ public final class QrShareService {
         Stage dialog = new Stage();
         dialog.initOwner(owner);
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Share via QR Code");
+        dialog.setTitle(dialogTitle);
         dialog.setScene(new Scene(root));
         dialog.setOnCloseRequest(e -> stopActiveServer());
         closeBtn.setOnAction(e -> {

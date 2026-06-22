@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * In-memory disease library. Loaded from diseases.csv at startup;
- * new diseases can be added at runtime via the UI.
+ * In-memory disease library backed by the SQLite {@code diseases} table.
+ * Loaded from the database at startup; new diseases can be added at runtime via the UI.
  */
 public final class DiseaseLibrary {
 
