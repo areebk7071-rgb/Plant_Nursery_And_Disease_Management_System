@@ -24,7 +24,7 @@ public final class TreatmentTrackingService {
 
     public static void syncWithPlants(List<Plant> plants, ObservableList<TreatmentRecord> records, int nextId) {
         for (Plant plant : plants) {
-            if (plant.hasDisease() && findActive(plant.getId(), records) == null) {
+            if (plant.hasDisease() && findActive(plant.getId(), records).isEmpty()) {
                 records.add(TreatmentRecord.fromPlant(plant, nextId++));
             }
         }

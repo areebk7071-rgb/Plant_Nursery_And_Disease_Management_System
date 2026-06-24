@@ -149,7 +149,7 @@ On first launch, a default user is created automatically:
 
 | Username | Password |
 |----------|----------|
-| `admin`  | `admin`  |
+| `admin`  | `admin123` |
 
 > ⚠️ Change this in production use.
 

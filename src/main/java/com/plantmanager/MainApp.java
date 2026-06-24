@@ -29,12 +29,6 @@ public class MainApp extends Application {
         primaryStage.setMinWidth(900);
         primaryStage.setMinHeight(600);
 
-        try {
-            authService.getUserRepository().ensureDefaultUsers();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to initialize users", e);
-        }
-
         SplashScreen.show(this::showLoginScreen);
     }
 

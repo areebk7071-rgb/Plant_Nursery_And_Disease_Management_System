@@ -2,12 +2,10 @@ package com.plantmanager.controller;
 
 import com.plantmanager.model.Disease;
 import com.plantmanager.model.DiseaseLibrary;
-import com.plantmanager.model.FlowerPlant;
-import com.plantmanager.model.FruitPlant;
-import com.plantmanager.model.HerbPlant;
 import com.plantmanager.model.Plant;
 import com.plantmanager.model.TreatmentRecord;
 import com.plantmanager.model.User;
+import com.plantmanager.service.AiService;
 import com.plantmanager.service.TreatmentTrackingService;
 import com.plantmanager.repository.PlantRepository;
 import com.plantmanager.repository.DiseaseRepository;
@@ -77,8 +75,11 @@ public class MainController {
     @FXML private Button trackTreatmentButton;
     @FXML private Button viewTreatmentButton;
     @FXML private Button addDiseaseButton;
+    @FXML private Button askAiButton;
 
+    @FXML private MenuItem exportMenuItem;
     @FXML private MenuItem exportPdfMenuItem;
+    @FXML private MenuItem shareCsvQrMenuItem;
     @FXML private MenuItem sharePdfQrMenuItem;
     @FXML private MenuItem logoutMenuItem;
     @FXML private MenuItem exitMenuItem;
@@ -105,6 +106,7 @@ public class MainController {
     private ObservableList<TreatmentRecord> treatmentRecords;
     private FilteredList<Plant> filteredPlants;
     private Runnable onLogout;
+    private AiService aiService;
 
     public void initializeData(PlantRepository repository, DiseaseRepository diseaseRepository,
                                TreatmentRecordRepository treatmentRecordRepository,
@@ -116,6 +118,7 @@ public class MainController {
         this.repository = repository;
         this.diseaseRepository = diseaseRepository;
         this.treatmentRecordRepository = treatmentRecordRepository;
+        this.aiService = new AiService();
         try {
             plants = repository.loadPlants();
         } catch (IOException e) {
@@ -575,9 +578,28 @@ public class MainController {
     }
 
     @FXML
+    private void handleExport() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export Plants CSV");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
+        chooser.setInitialFileName("plants_backup.csv");
+
+        Stage stage = (Stage) plantTable.getScene().getWindow();
+        java.io.File file = chooser.showSaveDialog(stage);
+        if (file != null) {
+            try {
+                repository.exportPlants(plants, Path.of(file.toURI()));
+                statusLabel.setText("Exported CSV: " + file.getName());
+            } catch (IOException e) {
+                showError("Export Failed", e.getMessage());
+            }
+        }
+    }
+
+    @FXML
     private void handleExportPdf() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Export Garden Health Report (Live Database)");
+        chooser.setTitle("Export Garden Health Report (PDF)");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
         chooser.setInitialFileName("garden_health_report.pdf");
 
@@ -589,11 +611,25 @@ public class MainController {
                 path = Path.of(path + ".pdf");
             }
             try {
-                PdfReportService.exportGardenReportFromDatabase(path);
-                statusLabel.setText("Exported live database PDF: " + path.getFileName());
+                PdfReportService.exportGardenReport(plants, path);
+                statusLabel.setText("Exported PDF: " + path.getFileName());
             } catch (IOException e) {
                 showError("PDF Export Failed", e.getMessage());
             }
+        }
+    }
+
+    @FXML
+    private void handleShareCsvQr() {
+        Stage stage = (Stage) plantTable.getScene().getWindow();
+        try {
+            Path temp = Files.createTempFile("plants_share_", ".csv");
+            temp.toFile().deleteOnExit();
+            repository.exportPlants(plants, temp);
+            QrShareService.shareFile(temp, "plants.csv", stage);
+            statusLabel.setText("QR share ready for plants.csv");
+        } catch (Exception e) {
+            showError("QR Share Failed", e.getMessage());
         }
     }
 
@@ -603,11 +639,36 @@ public class MainController {
         try {
             Path temp = Files.createTempFile("garden_report_", ".pdf");
             temp.toFile().deleteOnExit();
-            PdfReportService.exportGardenReportFromDatabase(temp);
-            QrShareService.shareDatabasePdf(temp, stage);
-            statusLabel.setText("QR share ready — live database PDF");
+            PdfReportService.exportGardenReport(plants, temp);
+            QrShareService.shareFile(temp, "garden_health_report.pdf", stage);
+            statusLabel.setText("QR share ready for PDF report");
         } catch (Exception e) {
             showError("QR Share Failed", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleAskAi() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/plantmanager/view/ai-dialog.fxml"));
+            Parent root = loader.load();
+
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.setTitle("AI Plant Advisor");
+
+            AiController controller = loader.getController();
+            controller.initialize(aiService, plants, dialog);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/com/plantmanager/view/styles.css").toExternalForm());
+            dialog.setScene(scene);
+            dialog.setResizable(true);
+            dialog.showAndWait();
+        } catch (IOException e) {
+            showError("AI Dialog Error", e.getMessage());
         }
     }
 
@@ -638,9 +699,7 @@ public class MainController {
                 Demonstrates OOP: encapsulation, inheritance,
                 polymorphism, and abstraction.
 
-                Data is stored in a local SQLite database
-                (botanical_treatment_advisor.db). PDF reports and
-                QR sharing compile data directly from the live database.
+                Data stored in a local SQLite database (botanical_treatment_advisor.db).
                 """);
         about.showAndWait();
     }

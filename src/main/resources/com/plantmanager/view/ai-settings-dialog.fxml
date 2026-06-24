@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.plantmanager.controller.AiSettingsController"
+      spacing="14" prefWidth="460"
+      styleClass="treatment-dialog-root">
+
+    <VBox styleClass="treatment-dialog-header" spacing="4">
+        <padding>
+            <Insets top="14" right="20" bottom="14" left="20"/>
+        </padding>
+        <Label text="🤖" styleClass="treatment-header-icon"/>
+        <Label text="AI Settings" styleClass="treatment-header-title"/>
+        <Label text="Configure your AI provider" styleClass="treatment-header-subtitle"/>
+    </VBox>
+
+    <VBox spacing="12">
+        <padding>
+            <Insets top="12" right="20" bottom="16" left="20"/>
+        </padding>
+
+        <VBox spacing="4">
+            <Label text="Provider" styleClass="field-label"/>
+            <ComboBox fx:id="providerCombo" editable="false" maxWidth="Infinity"/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="API URL" styleClass="field-label"/>
+            <TextField fx:id="apiUrlField" promptText="http://localhost:11434/v1/chat/completions" styleClass="login-field"/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="API Key (leave blank if not needed)" styleClass="field-label"/>
+            <PasswordField fx:id="apiKeyField" promptText="sk-..." styleClass="login-field"/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="Model Name" styleClass="field-label"/>
+            <TextField fx:id="modelField" promptText="llama3.2, gpt-4o-mini, gemma3..." styleClass="login-field"/>
+        </VBox>
+
+        <Label fx:id="statusLabel" styleClass="login-error" wrapText="true"
+               visible="false" managed="false"/>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="Test Connection" onAction="#handleTest" styleClass="secondary-button"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Cancel" onAction="#handleCancel" styleClass="secondary-button"/>
+            <Button text="Save" onAction="#handleSave" styleClass="primary-button" prefWidth="100"/>
+        </HBox>
+    </VBox>
+</VBox>

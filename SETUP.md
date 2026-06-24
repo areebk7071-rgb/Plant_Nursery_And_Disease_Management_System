@@ -45,7 +45,7 @@ On first launch:
 ### Default credentials
 ```
 Username: admin
-Password: admin
+Password: admin123
 ```
 
 ---

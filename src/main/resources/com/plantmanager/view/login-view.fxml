@@ -16,10 +16,11 @@
             </padding>
             <Label text="🌿" styleClass="login-icon"/>
             <Label text="Botanical Treatment Advisor" styleClass="login-title"/>
-            <Label text="Sign in to continue" styleClass="login-subtitle"/>
+            <Label fx:id="subtitleLabel" text="Sign in to continue" styleClass="login-subtitle"/>
         </VBox>
 
-        <VBox spacing="16" alignment="CENTER_LEFT">
+        <!-- Login Form Container -->
+        <VBox fx:id="loginFormBox" spacing="16" alignment="CENTER_LEFT">
             <padding>
                 <Insets top="28" right="32" bottom="28" left="32"/>
             </padding>
@@ -39,11 +40,48 @@
             <Button fx:id="loginButton" text="Sign In" onAction="#handleLogin"
                     styleClass="primary-button login-button" maxWidth="Infinity"/>
 
-            <VBox spacing="4" styleClass="login-hint-box">
-                <Label text="Demo accounts" styleClass="login-hint-title"/>
-                <Label text="admin / admin123" styleClass="login-hint"/>
-                <Label text="gardener / garden2024" styleClass="login-hint"/>
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="Don't have an account?" styleClass="login-hint"/>
+                <Hyperlink text="Sign Up" onAction="#showRegisterForm" style="-fx-text-fill: #2d6a4f; -fx-font-weight: bold;"/>
+            </HBox>
+
+        </VBox>
+
+        <!-- Registration Form Container -->
+        <VBox fx:id="registerFormBox" spacing="14" alignment="CENTER_LEFT" visible="false" managed="false">
+            <padding>
+                <Insets top="20" right="32" bottom="28" left="32"/>
+            </padding>
+
+            <VBox spacing="4">
+                <Label text="Username" styleClass="field-label"/>
+                <TextField fx:id="regUsernameField" promptText="Choose a username" styleClass="login-field"/>
             </VBox>
+
+            <VBox spacing="4">
+                <Label text="Display Name" styleClass="field-label"/>
+                <TextField fx:id="regDisplayNameField" promptText="Enter your name" styleClass="login-field"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Password" styleClass="field-label"/>
+                <PasswordField fx:id="regPasswordField" promptText="Create password" styleClass="login-field"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Confirm Password" styleClass="field-label"/>
+                <PasswordField fx:id="regConfirmPasswordField" promptText="Confirm password" styleClass="login-field"/>
+            </VBox>
+
+            <Label fx:id="regErrorLabel" styleClass="login-error" visible="false" managed="false" wrapText="true"/>
+
+            <Button fx:id="registerButton" text="Create Account" onAction="#handleRegister"
+                    styleClass="primary-button login-button" maxWidth="Infinity"/>
+
+            <HBox alignment="CENTER" spacing="6">
+                <Label text="Already have an account?" styleClass="login-hint"/>
+                <Hyperlink text="Sign In" onAction="#showLoginForm" style="-fx-text-fill: #2d6a4f; -fx-font-weight: bold;"/>
+            </HBox>
         </VBox>
     </VBox>
 </StackPane>

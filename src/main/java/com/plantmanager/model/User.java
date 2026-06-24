@@ -1,10 +1,5 @@
 package com.plantmanager.model;
 
-import com.plantmanager.repository.CsvUtils;
-
-/**
- * Application user for login authentication.
- */
 public class User {
 
     private final String username;
@@ -27,22 +22,5 @@ public class User {
 
     public String getDisplayName() {
         return displayName;
-    }
-
-    public static String csvHeader() {
-        return "username,passwordHash,displayName";
-    }
-
-    public String toCsvRow() {
-        return CsvUtils.quote(username) + ","
-                + CsvUtils.quote(passwordHash) + ","
-                + CsvUtils.quote(displayName);
-    }
-
-    public static User fromCsv(String[] parts) {
-        if (parts.length < 3) {
-            return null;
-        }
-        return new User(parts[0].trim(), parts[1].trim(), parts[2].trim());
     }
 }

@@ -183,6 +183,9 @@
                         styleClass="secondary-button"/>
                 <Button fx:id="trackTreatmentButton" text="Track Treatment" onAction="#handleTrackTreatment"
                         styleClass="secondary-button"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="askAiButton" text="🤖 Ask AI" onAction="#handleAskAi"
+                        styleClass="primary-button"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="treatmentReminderLabel" styleClass="reminder-label"/>
             </HBox>

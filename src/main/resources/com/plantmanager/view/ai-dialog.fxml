@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.plantmanager.controller.AiController"
+      spacing="12" prefWidth="600" prefHeight="500"
+      styleClass="treatment-dialog-root">
+
+    <VBox styleClass="treatment-dialog-header" spacing="4">
+        <padding>
+            <Insets top="16" right="20" bottom="16" left="20"/>
+        </padding>
+        <Label text="🤖" styleClass="treatment-header-icon"/>
+        <Label text="AI Plant Advisor" styleClass="treatment-header-title"/>
+        <Label fx:id="headerSubtitle" text="Ask questions about your plants" styleClass="treatment-header-subtitle"/>
+    </VBox>
+
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <padding>
+            <Insets top="12" right="16" bottom="12" left="16"/>
+        </padding>
+
+        <TextArea fx:id="chatArea" editable="false" wrapText="true"
+                  VBox.vgrow="ALWAYS"
+                  style="-fx-font-size: 13px; -fx-background-color: #f8faf8;"/>
+
+        <TextArea fx:id="inputField" promptText="Ask about plant care, diseases, treatments..."
+                   prefRowCount="3" wrapText="true" style="-fx-font-size: 13px;"/>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button text="⚙ Settings" onAction="#handleOpenSettings" styleClass="secondary-button"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="askButton" text="Ask AI" onAction="#handleAsk"
+                    styleClass="primary-button" prefWidth="120"/>
+        </HBox>
+    </VBox>
+</VBox>
