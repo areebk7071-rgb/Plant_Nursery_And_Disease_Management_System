@@ -1,7 +1,12 @@
 package com.plantmanager.model;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Abstract base class for all plant types.
@@ -15,6 +20,7 @@ public abstract class Plant implements Treatable {
     private LocalDate plantedDate;
     private Disease assignedDisease;
     private String imageRef;
+    private Set<String> categories;
 
     protected Plant(int id, String name, String species, LocalDate plantedDate) {
         this(id, name, species, plantedDate, "");
@@ -26,6 +32,7 @@ public abstract class Plant implements Treatable {
         setSpecies(species);
         setPlantedDate(plantedDate);
         setImageRef(imageRef);
+        this.categories = new HashSet<>();
     }
 
     public int getId() {
@@ -93,6 +100,40 @@ public abstract class Plant implements Treatable {
         this.imageRef = imageRef != null ? imageRef.trim() : "";
     }
 
+    public Set<String> getCategories() {
+        Set<String> all = new HashSet<>(categories);
+        all.add(getPlantType());
+        return Collections.unmodifiableSet(all);
+    }
+
+    public void setCategories(Set<String> categories) {
+        this.categories = categories != null ? new HashSet<>(categories) : new HashSet<>();
+    }
+
+    public void addCategory(String category) {
+        if (category != null && !category.isBlank()) {
+            categories.add(category.trim());
+        }
+    }
+
+    public void removeCategory(String category) {
+        categories.remove(category);
+    }
+
+    public String getDisplayType() {
+        Set<String> all = getCategories();
+        if (all.size() <= 1) {
+            return getPlantType();
+        }
+        return String.join(", ", all);
+    }
+
+    public String categoriesCsv() {
+        return categories.stream()
+                .filter(c -> !c.equals(getPlantType()))
+                .collect(Collectors.joining(";"));
+    }
+
     public String getHealthStatus() {
         return hasDisease() ? "Diseased" : "Healthy";
     }
@@ -112,7 +153,8 @@ public abstract class Plant implements Treatable {
 
     public static String getCsvHeader() {
         return "id,name,species,plantedDate,plantType,assignedDiseaseName," +
-                "expectedYield,harvestPeriod,bloomColor,isPerennial,culinaryUse,isMedicinal,imageRef";
+                "expectedYield,harvestPeriod,bloomColor,isPerennial,culinaryUse,isMedicinal,imageRef," +
+                "categories,rootType,daysToHarvest,maxHeight,canopySpread,trunkDiameter,climbingSupport,growthRate,maxVineLength";
     }
 
     protected String imageRefCsvSuffix() {

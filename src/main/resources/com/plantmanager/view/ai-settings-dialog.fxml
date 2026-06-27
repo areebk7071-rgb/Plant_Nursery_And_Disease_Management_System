@@ -6,7 +6,7 @@
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.plantmanager.controller.AiSettingsController"
-      spacing="14" prefWidth="460"
+      spacing="14" prefWidth="500"
       styleClass="treatment-dialog-root">
 
     <VBox styleClass="treatment-dialog-header" spacing="4">
@@ -15,13 +15,17 @@
         </padding>
         <Label text="🤖" styleClass="treatment-header-icon"/>
         <Label text="AI Settings" styleClass="treatment-header-title"/>
-        <Label text="Configure your AI provider" styleClass="treatment-header-subtitle"/>
+        <Label text="Configure your AI providers" styleClass="treatment-header-subtitle"/>
     </VBox>
 
     <VBox spacing="12">
         <padding>
             <Insets top="12" right="20" bottom="16" left="20"/>
         </padding>
+
+        <Label text="Chat Provider (OpenAI-compatible)" styleClass="subsection-title"/>
+        <Label text="Built-in works immediately (no key). For speed, try OpenRouter (free tier, easy signup at openrouter.ai) or run Ollama locally."
+               styleClass="login-hint" wrapText="true"/>
 
         <VBox spacing="4">
             <Label text="Provider" styleClass="field-label"/>
@@ -41,6 +45,16 @@
         <VBox spacing="4">
             <Label text="Model Name" styleClass="field-label"/>
             <TextField fx:id="modelField" promptText="llama3.2, gpt-4o-mini, gemma3..." styleClass="login-field"/>
+        </VBox>
+
+        <Separator/>
+
+        <Label text="Plant Identification (PlantNet)" styleClass="subsection-title"/>
+
+        <VBox spacing="4">
+            <Label text="PlantNet API Key" styleClass="field-label"/>
+            <TextField fx:id="plantNetApiKeyField" promptText="Enter your PlantNet API key" styleClass="login-field"/>
+            <Label text="Get a free key at https://my.plantnet.org/" styleClass="login-hint"/>
         </VBox>
 
         <Label fx:id="statusLabel" styleClass="login-error" wrapText="true"

@@ -6,6 +6,8 @@ import com.plantmanager.model.Plant;
 import com.plantmanager.model.TreatmentRecord;
 import com.plantmanager.model.User;
 import com.plantmanager.service.AiService;
+import com.plantmanager.service.ConfigPersistence;
+import com.plantmanager.service.PlantNetService;
 import com.plantmanager.service.TreatmentTrackingService;
 import com.plantmanager.repository.PlantRepository;
 import com.plantmanager.repository.DiseaseRepository;
@@ -107,6 +109,7 @@ public class MainController {
     private FilteredList<Plant> filteredPlants;
     private Runnable onLogout;
     private AiService aiService;
+    private PlantNetService plantNetService;
 
     public void initializeData(PlantRepository repository, DiseaseRepository diseaseRepository,
                                TreatmentRecordRepository treatmentRecordRepository,
@@ -119,6 +122,12 @@ public class MainController {
         this.diseaseRepository = diseaseRepository;
         this.treatmentRecordRepository = treatmentRecordRepository;
         this.aiService = new AiService();
+        this.plantNetService = new PlantNetService();
+        try {
+            ConfigPersistence.load(aiService.getConfig(), plantNetService);
+        } catch (Exception e) {
+            System.err.println("Could not load config: " + e.getMessage());
+        }
         try {
             plants = repository.loadPlants();
         } catch (IOException e) {
@@ -335,7 +344,7 @@ public class MainController {
         colId.setCellValueFactory(data -> new javafx.beans.property.SimpleIntegerProperty(data.getValue().getId()));
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         colSpecies.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSpecies()));
-        colType.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPlantType()));
+        colType.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDisplayType()));
         colDisease.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAssignedDiseaseName()));
         colPlantedDate.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPlantedDate().toString()));
         colHealth.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getHealthStatus()));
@@ -387,7 +396,8 @@ public class MainController {
                 return plant.getName().toLowerCase().contains(filter)
                         || plant.getSpecies().toLowerCase().contains(filter)
                         || plant.getAssignedDiseaseName().toLowerCase().contains(filter)
-                        || plant.getPlantType().toLowerCase().contains(filter);
+                        || plant.getPlantType().toLowerCase().contains(filter)
+                        || plant.getDisplayType().toLowerCase().contains(filter);
             });
         });
     }
@@ -659,7 +669,7 @@ public class MainController {
             dialog.setTitle("AI Plant Advisor");
 
             AiController controller = loader.getController();
-            controller.initialize(aiService, plants, dialog);
+            controller.initialize(aiService, plantNetService, plants, dialog);
 
             Scene scene = new Scene(root);
             scene.getStylesheets().add(
@@ -740,7 +750,10 @@ public class MainController {
                 }
             }
         } catch (IOException e) {
-            showError("Dialog Error", e.getMessage());
+            Throwable root = e;
+            while (root.getCause() != null) root = root.getCause();
+            String msg = (root.getMessage() != null ? root.getMessage() : root.getClass().getSimpleName());
+            showError("Dialog Error", msg);
         }
     }
 

@@ -60,6 +60,8 @@ public class HerbPlant extends Plant {
                 CsvUtils.quote(getAssignedDiseaseName()) + "," +
                 ",,,," +
                 CsvUtils.quote(culinaryUse) + "," +
-                isMedicinal + imageRefCsvSuffix();
+                isMedicinal +
+                imageRefCsvSuffix() + "," +
+                CsvUtils.quote(categoriesCsv()) + ",,,,,,,,,";
     }
 }

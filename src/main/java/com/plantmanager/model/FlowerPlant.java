@@ -61,6 +61,8 @@ public class FlowerPlant extends Plant {
                 ",," +
                 CsvUtils.quote(bloomColor) + "," +
                 isPerennial + "," +
-                "," + imageRefCsvSuffix();
+                "," +
+                imageRefCsvSuffix() + "," +
+                CsvUtils.quote(categoriesCsv()) + ",,,,,,,,,";
     }
 }

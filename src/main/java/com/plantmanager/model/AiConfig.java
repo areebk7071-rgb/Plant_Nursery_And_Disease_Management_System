@@ -8,10 +8,10 @@ public class AiConfig {
     private String modelName;
 
     public AiConfig() {
-        this.provider = "Ollama";
-        this.apiUrl = "http://localhost:11434/v1/chat/completions";
+        this.provider = "Free (built-in)";
+        this.apiUrl = "https://text.pollinations.ai/openai";
         this.apiKey = "";
-        this.modelName = "llama3.2";
+        this.modelName = "openai";
     }
 
     public AiConfig(String provider, String apiUrl, String apiKey, String modelName) {

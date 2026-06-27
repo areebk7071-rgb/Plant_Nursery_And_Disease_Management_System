@@ -30,6 +30,9 @@ public final class DashboardStats {
         counts.put("Fruit", plants.stream().filter(p -> "Fruit".equals(p.getPlantType())).count());
         counts.put("Flower", plants.stream().filter(p -> "Flower".equals(p.getPlantType())).count());
         counts.put("Herb", plants.stream().filter(p -> "Herb".equals(p.getPlantType())).count());
+        counts.put("Vegetable", plants.stream().filter(p -> "Vegetable".equals(p.getPlantType())).count());
+        counts.put("Tree", plants.stream().filter(p -> "Tree".equals(p.getPlantType())).count());
+        counts.put("Vine", plants.stream().filter(p -> "Vine".equals(p.getPlantType())).count());
         return counts;
     }
 
@@ -95,8 +98,13 @@ public final class DashboardStats {
         long fruit = byType.getOrDefault("Fruit", 0L);
         long flower = byType.getOrDefault("Flower", 0L);
         long herb = byType.getOrDefault("Herb", 0L);
-        if (fruit > 0 && flower == 0 && herb == 0) {
-            insights.add("💡 Tip: Add flower or herb plants to diversify your garden portfolio.");
+        long vegetable = byType.getOrDefault("Vegetable", 0L);
+        long tree = byType.getOrDefault("Tree", 0L);
+        long vine = byType.getOrDefault("Vine", 0L);
+        long totalUniqueTypes = (fruit > 0 ? 1 : 0) + (flower > 0 ? 1 : 0) + (herb > 0 ? 1 : 0)
+                + (vegetable > 0 ? 1 : 0) + (tree > 0 ? 1 : 0) + (vine > 0 ? 1 : 0);
+        if (totalUniqueTypes <= 2) {
+            insights.add("💡 Tip: Add more plant varieties (vegetables, trees, or vines) to diversify your garden portfolio.");
         } else if (diseased > 0 && healthPct < 50) {
             insights.add("💡 Tip: Review treatment schedules — early action prevents spread.");
         } else {

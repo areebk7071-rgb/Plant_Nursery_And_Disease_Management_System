@@ -1,0 +1,17 @@
+# Botanical Treatment Advisor - AI Configuration
+# Copy this file to config.properties and fill in your API keys.
+# The app works out of the box with the free built-in provider.
+
+# --- AI Chat Provider (OpenAI-compatible) ---
+# Free (built-in):  https://text.pollinations.ai/openai  (no key needed, 1 req/15s)
+# Ollama (local):   http://localhost:11434/v1/chat/completions
+# OpenAI:           https://api.openai.com/v1/chat/completions
+# LM Studio (local): http://localhost:1234/v1/chat/completions
+ai.provider=Free (built-in)
+ai.apiUrl=https://text.pollinations.ai/openai
+ai.apiKey=
+ai.modelName=openai
+
+# --- Plant Identification (PlantNet) ---
+# Get a FREE API key at https://my.plantnet.org/
+plantnet.apiKey=

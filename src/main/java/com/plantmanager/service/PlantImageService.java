@@ -2,13 +2,9 @@ package com.plantmanager.service;
 
 import com.plantmanager.model.Plant;
 import com.plantmanager.model.PlantIcon;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.SnapshotParameters;
 
 import java.io.IOException;
@@ -85,25 +81,23 @@ public final class PlantImageService {
     }
 
     private static Image generateIcon(PlantIcon icon) {
-        StackPane pane = new StackPane();
-        pane.setMinSize(ICON_SIZE, ICON_SIZE);
-        pane.setMaxSize(ICON_SIZE, ICON_SIZE);
-        pane.setAlignment(Pos.CENTER);
+        javafx.scene.canvas.Canvas canvas = new javafx.scene.canvas.Canvas(ICON_SIZE, ICON_SIZE);
+        javafx.scene.canvas.GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        Rectangle bg = new Rectangle(ICON_SIZE, ICON_SIZE);
-        bg.setArcWidth(14);
-        bg.setArcHeight(14);
-        bg.setFill(Color.web(icon.getColor()));
+        // Rounded rectangle background
+        gc.setFill(Color.web(icon.getColor()));
+        gc.fillRoundRect(0, 0, ICON_SIZE, ICON_SIZE, 14, 14);
 
-        Label emoji = new Label(icon.getEmoji());
-        emoji.setStyle("-fx-font-size: 30px;");
-
-        pane.getChildren().addAll(bg, emoji);
+        // Emoji centered
+        gc.setFill(Color.WHITE);
+        gc.setFont(javafx.scene.text.Font.font(28));
+        gc.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+        gc.setTextBaseline(javafx.geometry.VPos.CENTER);
+        gc.fillText(icon.getEmoji(), ICON_SIZE / 2.0, ICON_SIZE / 2.0);
 
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
-        WritableImage snapshot = pane.snapshot(params, null);
-        return snapshot;
+        return canvas.snapshot(params, null);
     }
 
     private static String getExtension(Path path) {

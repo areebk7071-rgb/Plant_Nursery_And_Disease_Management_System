@@ -103,6 +103,17 @@ public final class DatabaseManager {
                 )
             """);
 
+            // Migrate — add columns for new plant types + categories (if not already present)
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN categories TEXT DEFAULT ''"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN root_type TEXT DEFAULT ''"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN days_to_harvest INTEGER DEFAULT 0"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN max_height REAL DEFAULT 0"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN canopy_spread REAL DEFAULT 0"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN trunk_diameter REAL DEFAULT 0"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN climbing_support TEXT DEFAULT ''"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN growth_rate TEXT DEFAULT ''"); } catch (Exception ignored) { }
+            try { stmt.execute("ALTER TABLE plants ADD COLUMN max_vine_length REAL DEFAULT 0"); } catch (Exception ignored) { }
+
             // TREATMENT_RECORDS table — treatment history per plant
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS treatment_records (

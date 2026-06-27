@@ -62,6 +62,8 @@ public class FruitPlant extends Plant {
                 CsvUtils.quote(getAssignedDiseaseName()) + "," +
                 expectedYield + "," +
                 CsvUtils.quote(harvestPeriod) + "," +
-                ",,," + imageRefCsvSuffix();
+                ",,," +
+                imageRefCsvSuffix() + "," +
+                CsvUtils.quote(categoriesCsv()) + ",,,,,,,,,";
     }
 }

@@ -7,51 +7,133 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 public class AiService {
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(60);
+    private static final Duration TIMEOUT = Duration.ofSeconds(25);
     private final HttpClient httpClient;
-    private AiConfig config;
+    private AiConfig primaryConfig;
+    private String currentProviderName;
+    private final List<AiConfig> fallbackConfigs;
 
     public AiService() {
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
-        this.config = new AiConfig();
+        this.primaryConfig = new AiConfig();
+        this.fallbackConfigs = buildDefaultFallbacks();
+        this.currentProviderName = "Free (built-in)";
     }
 
     public AiService(AiConfig config) {
         this();
-        this.config = config;
+        this.primaryConfig = config;
+    }
+
+    private List<AiConfig> buildDefaultFallbacks() {
+        List<AiConfig> fallbacks = new ArrayList<>();
+        fallbacks.add(new AiConfig("Free (built-in, no key)",
+                "https://text.pollinations.ai/openai", "", "openai"));
+        return fallbacks;
     }
 
     public void setConfig(AiConfig config) {
-        this.config = config;
+        this.primaryConfig = config;
     }
 
     public AiConfig getConfig() {
-        return config;
+        return primaryConfig;
+    }
+
+    public String getCurrentProviderName() {
+        return currentProviderName;
     }
 
     public String ask(String userMessage) throws Exception {
         return ask(userMessage, List.of());
     }
 
+    public String askWithImage(String userMessage, Path imagePath, List<Plant> plants) throws Exception {
+        List<AiConfig> configs = new ArrayList<>();
+        configs.add(primaryConfig);
+        configs.addAll(buildDefaultFallbacks());
+
+        Exception lastError = null;
+        for (AiConfig cfg : configs) {
+            try {
+                String result = doAskWithImage(cfg, userMessage, imagePath, plants);
+                currentProviderName = cfg.getProvider();
+                return result;
+            } catch (Exception e) {
+                lastError = e;
+            }
+        }
+        currentProviderName = primaryConfig.getProvider();
+        throw lastError != null ? lastError : new RuntimeException("All AI providers failed");
+    }
+
     public String ask(String userMessage, List<Plant> plants) throws Exception {
+        List<AiConfig> configs = new ArrayList<>();
+        configs.add(primaryConfig);
+        configs.addAll(buildDefaultFallbacks());
+
+        Exception lastError = null;
+        for (AiConfig cfg : configs) {
+            try {
+                String result = doAsk(cfg, userMessage, plants);
+                currentProviderName = cfg.getProvider();
+                return result;
+            } catch (Exception e) {
+                lastError = e;
+            }
+        }
+        currentProviderName = primaryConfig.getProvider();
+        throw lastError != null ? lastError : new RuntimeException("All AI providers failed");
+    }
+
+    private String doAskWithImage(AiConfig cfg, String userMessage, Path imagePath, List<Plant> plants) throws Exception {
         String systemPrompt = buildSystemPrompt(plants);
-        String body = buildRequestBody(systemPrompt, userMessage);
+        String body = buildVisionRequestBody(systemPrompt, userMessage, imagePath, cfg);
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
-                .uri(URI.create(config.getApiUrl()))
+                .uri(URI.create(cfg.getApiUrl()))
                 .header("Content-Type", "application/json")
                 .timeout(TIMEOUT)
                 .method("POST", HttpRequest.BodyPublishers.ofString(body));
 
-        if (!config.getApiKey().isBlank()) {
-            builder.header("Authorization", "Bearer " + config.getApiKey());
+        if (!cfg.getApiKey().isBlank()) {
+            builder.header("Authorization", "Bearer " + cfg.getApiKey());
+        }
+
+        HttpRequest request = builder.build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("API returned status " + response.statusCode()
+                    + ": " + response.body());
+        }
+
+        return extractContent(response.body());
+    }
+
+    private String doAsk(AiConfig cfg, String userMessage, List<Plant> plants) throws Exception {
+        String systemPrompt = buildSystemPrompt(plants);
+        String body = buildRequestBody(systemPrompt, userMessage, cfg);
+
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(cfg.getApiUrl()))
+                .header("Content-Type", "application/json")
+                .timeout(TIMEOUT)
+                .method("POST", HttpRequest.BodyPublishers.ofString(body));
+
+        if (!cfg.getApiKey().isBlank()) {
+            builder.header("Authorization", "Bearer " + cfg.getApiKey());
         }
 
         HttpRequest request = builder.build();
@@ -70,6 +152,7 @@ public class AiService {
         prompt.append("""
                 You are a botanical advisor assistant. You help users with plant care,
                 disease identification, and treatment recommendations.
+                You have expertise in fruits, flowers, herbs, vegetables, trees, and vines.
                 Keep responses concise, practical, and science-based.
                 """);
 
@@ -90,7 +173,32 @@ public class AiService {
         return prompt.toString();
     }
 
-    private String buildRequestBody(String systemPrompt, String userMessage) {
+    private String buildVisionRequestBody(String systemPrompt, String userMessage, Path imagePath, AiConfig cfg) throws Exception {
+        String mimeType = guessMimeType(imagePath);
+        byte[] imageBytes = Files.readAllBytes(imagePath);
+        String base64 = Base64.getEncoder().encodeToString(imageBytes);
+        String dataUrl = "data:" + mimeType + ";base64," + base64;
+
+        String escapedSystem = escapeJson(systemPrompt);
+        String escapedUser = escapeJson(userMessage);
+
+        return """
+                {
+                    "model": "%s",
+                    "messages": [
+                        {"role": "system", "content": "%s"},
+                        {"role": "user", "content": [
+                            {"type": "text", "text": "%s"},
+                            {"type": "image_url", "image_url": {"url": "%s"}}
+                        ]}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 1000
+                }
+                """.formatted(cfg.getModelName(), escapedSystem, escapedUser, dataUrl);
+    }
+
+    private String buildRequestBody(String systemPrompt, String userMessage, AiConfig cfg) {
         String escapedSystem = escapeJson(systemPrompt);
         String escapedUser = escapeJson(userMessage);
 
@@ -104,7 +212,16 @@ public class AiService {
                     "temperature": 0.7,
                     "max_tokens": 1000
                 }
-                """.formatted(config.getModelName(), escapedSystem, escapedUser);
+                """.formatted(cfg.getModelName(), escapedSystem, escapedUser);
+    }
+
+    private String guessMimeType(Path path) {
+        String name = path.getFileName().toString().toLowerCase();
+        if (name.endsWith(".png")) return "image/png";
+        if (name.endsWith(".jpg") || name.endsWith(".jpeg")) return "image/jpeg";
+        if (name.endsWith(".gif")) return "image/gif";
+        if (name.endsWith(".webp")) return "image/webp";
+        return "image/jpeg";
     }
 
     private String escapeJson(String s) {

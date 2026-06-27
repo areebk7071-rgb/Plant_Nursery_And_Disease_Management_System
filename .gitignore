@@ -28,3 +28,6 @@ botanical_treatment_advisor.db
 
 # Compiled Java class files (not needed - Maven handles this)
 *.class
+
+# Local config (API keys — never commit your keys)
+config.properties

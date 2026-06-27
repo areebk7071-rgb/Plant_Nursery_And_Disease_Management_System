@@ -2,39 +2,61 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.plantmanager.controller.AiController"
-      spacing="12" prefWidth="600" prefHeight="500"
-      styleClass="treatment-dialog-root">
+      spacing="0" prefWidth="700" prefHeight="600"
+      styleClass="ai-root">
 
-    <VBox styleClass="treatment-dialog-header" spacing="4">
+    <VBox styleClass="ai-header" spacing="4">
         <padding>
-            <Insets top="16" right="20" bottom="16" left="20"/>
+            <Insets top="14" right="20" bottom="14" left="20"/>
         </padding>
-        <Label text="🤖" styleClass="treatment-header-icon"/>
-        <Label text="AI Plant Advisor" styleClass="treatment-header-title"/>
-        <Label fx:id="headerSubtitle" text="Ask questions about your plants" styleClass="treatment-header-subtitle"/>
-    </VBox>
-
-    <VBox spacing="10" VBox.vgrow="ALWAYS">
-        <padding>
-            <Insets top="12" right="16" bottom="12" left="16"/>
-        </padding>
-
-        <TextArea fx:id="chatArea" editable="false" wrapText="true"
-                  VBox.vgrow="ALWAYS"
-                  style="-fx-font-size: 13px; -fx-background-color: #f8faf8;"/>
-
-        <TextArea fx:id="inputField" promptText="Ask about plant care, diseases, treatments..."
-                   prefRowCount="3" wrapText="true" style="-fx-font-size: 13px;"/>
-
-        <HBox spacing="10" alignment="CENTER_RIGHT">
-            <Button text="⚙ Settings" onAction="#handleOpenSettings" styleClass="secondary-button"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button fx:id="askButton" text="Ask AI" onAction="#handleAsk"
-                    styleClass="primary-button" prefWidth="120"/>
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <Label text="🌿" styleClass="ai-header-icon"/>
+            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                <Label text="AI Plant Advisor" styleClass="ai-header-title"/>
+                <Label fx:id="headerSubtitle" text="Identify plants via image or ask questions"
+                       styleClass="ai-header-subtitle"/>
+            </VBox>
+            <Label fx:id="providerTag" styleClass="ai-provider-tag" onMouseClicked="#handleSwitchProvider"/>
         </HBox>
     </VBox>
+
+    <ScrollPane fx:id="chatScroll" fitToWidth="true" VBox.vgrow="ALWAYS"
+                styleClass="ai-chat-scroll">
+        <VBox fx:id="chatContainer" spacing="6" styleClass="ai-chat-container">
+            <padding>
+                <Insets top="12" right="16" bottom="12" left="16"/>
+            </padding>
+        </VBox>
+    </ScrollPane>
+
+    <HBox fx:id="imagePreviewBox" spacing="8" alignment="CENTER_LEFT"
+          visible="false" managed="false" styleClass="ai-image-preview-box">
+        <padding>
+            <Insets top="6" right="16" bottom="0" left="16"/>
+        </padding>
+        <ImageView fx:id="imagePreview" fitWidth="60" fitHeight="60"
+                   preserveRatio="true" styleClass="ai-image-preview"/>
+        <Label fx:id="imageFileName" styleClass="ai-image-filename"/>
+        <Button text="✕" onAction="#handleClearImage" styleClass="ai-image-clear"/>
+    </HBox>
+
+    <HBox spacing="8" alignment="CENTER_LEFT" styleClass="ai-input-area">
+        <padding>
+            <Insets top="8" right="16" bottom="10" left="16"/>
+        </padding>
+        <Button fx:id="uploadButton" text="📷" onAction="#handleUploadImage"
+                styleClass="ai-upload-btn"/>
+        <TextField fx:id="inputField" promptText="Ask about plant care, diseases, treatments..."
+                   HBox.hgrow="ALWAYS" styleClass="ai-input-field"/>
+        <Button fx:id="askButton" text="Send" onAction="#handleAsk"
+                styleClass="ai-send-btn"/>
+        <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancelRequest"
+                visible="false" managed="false" styleClass="secondary-button"/>
+        <Button text="⚙" onAction="#handleOpenSettings" styleClass="ai-settings-btn"/>
+    </HBox>
 </VBox>

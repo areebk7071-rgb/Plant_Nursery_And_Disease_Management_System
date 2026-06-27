@@ -7,6 +7,9 @@ import com.plantmanager.model.HerbPlant;
 import com.plantmanager.model.Plant;
 import com.plantmanager.model.PlantFactory;
 import com.plantmanager.model.PlantIcon;
+import com.plantmanager.model.TreePlant;
+import com.plantmanager.model.VegetablePlant;
+import com.plantmanager.model.VinePlant;
 import com.plantmanager.repository.DatabaseManager;
 
 import java.sql.Connection;
@@ -19,10 +22,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * DAO for the {@code plants} table and plant–disease junction links.
- */
 public class PlantDao {
+
+    private static final String SELECT_COLS =
+            "id, name, species, planted_date, plant_type, assigned_disease_name, " +
+            "expected_yield, harvest_period, bloom_color, is_perennial, culinary_use, is_medicinal, image_ref, " +
+            "categories, root_type, days_to_harvest, max_height, canopy_spread, trunk_diameter, " +
+            "climbing_support, growth_rate, max_vine_length";
+
+    private static final String UPSERT_COLS =
+            "id, name, species, planted_date, plant_type, assigned_disease_name, " +
+            "expected_yield, harvest_period, bloom_color, is_perennial, culinary_use, is_medicinal, image_ref, " +
+            "categories, root_type, days_to_harvest, max_height, canopy_spread, trunk_diameter, " +
+            "climbing_support, growth_rate, max_vine_length";
 
     private final PlantDiseaseDao plantDiseaseDao = new PlantDiseaseDao();
 
@@ -36,9 +48,7 @@ public class PlantDao {
     public List<Plant> findAllOrderedById() throws SQLException {
         Map<Integer, String> assignments = plantDiseaseDao.findAllAssignments();
         List<Plant> plants = new ArrayList<>();
-        String sql = "SELECT id, name, species, planted_date, plant_type, assigned_disease_name, " +
-                "expected_yield, harvest_period, bloom_color, is_perennial, culinary_use, is_medicinal, image_ref " +
-                "FROM plants ORDER BY id";
+        String sql = "SELECT " + SELECT_COLS + " FROM plants ORDER BY id";
         try (PreparedStatement stmt = DatabaseManager.getConnection().prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -52,16 +62,19 @@ public class PlantDao {
     }
 
     public void upsertAll(List<Plant> plants) throws SQLException {
-        String upsert = "INSERT INTO plants " +
-                "(id, name, species, planted_date, plant_type, assigned_disease_name, " +
-                "expected_yield, harvest_period, bloom_color, is_perennial, culinary_use, is_medicinal, image_ref) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+        String upsert = "INSERT INTO plants (" + UPSERT_COLS + ") " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT(id) DO UPDATE SET " +
                 "name=excluded.name, species=excluded.species, planted_date=excluded.planted_date, " +
                 "plant_type=excluded.plant_type, assigned_disease_name=excluded.assigned_disease_name, " +
                 "expected_yield=excluded.expected_yield, harvest_period=excluded.harvest_period, " +
                 "bloom_color=excluded.bloom_color, is_perennial=excluded.is_perennial, " +
-                "culinary_use=excluded.culinary_use, is_medicinal=excluded.is_medicinal, image_ref=excluded.image_ref";
+                "culinary_use=excluded.culinary_use, is_medicinal=excluded.is_medicinal, image_ref=excluded.image_ref, " +
+                "categories=excluded.categories, root_type=excluded.root_type, " +
+                "days_to_harvest=excluded.days_to_harvest, max_height=excluded.max_height, " +
+                "canopy_spread=excluded.canopy_spread, trunk_diameter=excluded.trunk_diameter, " +
+                "climbing_support=excluded.climbing_support, growth_rate=excluded.growth_rate, " +
+                "max_vine_length=excluded.max_vine_length";
 
         Connection conn = DatabaseManager.getConnection();
         conn.setAutoCommit(false);
@@ -121,8 +134,26 @@ public class PlantDao {
         FruitPlant apple = new FruitPlant(4, "Apple Tree", "Malus domestica",
                 LocalDate.of(2022, 9, 20), 50.0, "Autumn");
         apple.setImageRef(PlantIcon.APPLE.getKey());
+        apple.addCategory("Tree");
         DiseaseLibrary.findByName("Aphid Infestation").ifPresent(apple::setAssignedDisease);
         sample.add(apple);
+
+        VegetablePlant carrot = new VegetablePlant(5, "Carrot", "Daucus carota",
+                LocalDate.of(2025, 3, 1), "Taproot", 70);
+        carrot.setImageRef(PlantIcon.CARROT.getKey());
+        sample.add(carrot);
+
+        TreePlant oak = new TreePlant(6, "Oak Tree", "Quercus robur",
+                LocalDate.of(2020, 10, 5), 25.0, 15.0);
+        oak.setImageRef(PlantIcon.OAK.getKey());
+        sample.add(oak);
+
+        VinePlant grape = new VinePlant(7, "Grape Vine", "Vitis vinifera",
+                LocalDate.of(2023, 4, 10), "Trellis", "Medium", 6.0);
+        grape.setImageRef(PlantIcon.GRAPE.getKey());
+        grape.addCategory("Fruit");
+        DiseaseLibrary.findByName("Powdery Mildew").ifPresent(grape::setAssignedDisease);
+        sample.add(grape);
 
         return sample;
     }
@@ -179,6 +210,38 @@ public class PlantDao {
         }
 
         stmt.setString(13, plant.getImageRef());
+
+        // categories
+        stmt.setString(14, plant.categoriesCsv());
+
+        // type-specific columns
+        if (plant instanceof VegetablePlant vp) {
+            stmt.setString(15, vp.getRootType());
+            stmt.setInt(16, vp.getDaysToHarvest());
+        } else {
+            stmt.setString(15, "");
+            stmt.setInt(16, 0);
+        }
+
+        if (plant instanceof TreePlant tp) {
+            stmt.setDouble(17, tp.getMaxHeight());
+            stmt.setDouble(18, tp.getCanopySpread());
+            stmt.setNull(19, java.sql.Types.REAL);
+        } else {
+            stmt.setDouble(17, 0);
+            stmt.setDouble(18, 0);
+            stmt.setNull(19, java.sql.Types.REAL);
+        }
+
+        if (plant instanceof VinePlant vp) {
+            stmt.setString(20, vp.getClimbingSupport());
+            stmt.setString(21, vp.getGrowthRate());
+            stmt.setDouble(22, vp.getMaxVineLength());
+        } else {
+            stmt.setString(20, "");
+            stmt.setString(21, "");
+            stmt.setDouble(22, 0);
+        }
     }
 
     private Plant mapRowToPlant(ResultSet rs, Map<Integer, String> assignments) throws SQLException {
@@ -188,7 +251,7 @@ public class PlantDao {
             diseaseName = "";
         }
 
-        String[] row = new String[13];
+        String[] row = new String[22];
         row[0] = String.valueOf(plantId);
         row[1] = rs.getString("name");
         row[2] = rs.getString("species");
@@ -202,6 +265,15 @@ public class PlantDao {
         row[10] = nullToEmpty(rs.getString("culinary_use"));
         row[11] = String.valueOf(rs.getInt("is_medicinal") == 1);
         row[12] = nullToEmpty(rs.getString("image_ref"));
+        row[13] = nullToEmpty(rs.getString("categories"));
+        row[14] = nullToEmpty(rs.getString("root_type"));
+        row[15] = String.valueOf(rs.getInt("days_to_harvest"));
+        row[16] = String.valueOf(rs.getDouble("max_height"));
+        row[17] = String.valueOf(rs.getDouble("canopy_spread"));
+        row[18] = String.valueOf(rs.getDouble("trunk_diameter"));
+        row[19] = nullToEmpty(rs.getString("climbing_support"));
+        row[20] = nullToEmpty(rs.getString("growth_rate"));
+        row[21] = String.valueOf(rs.getDouble("max_vine_length"));
         return PlantFactory.fromCsv(row);
     }
 

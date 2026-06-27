@@ -5,6 +5,9 @@ import com.plantmanager.model.FruitPlant;
 import com.plantmanager.model.HerbPlant;
 import com.plantmanager.model.Plant;
 import com.plantmanager.model.PlantIcon;
+import com.plantmanager.model.TreePlant;
+import com.plantmanager.model.VegetablePlant;
+import com.plantmanager.model.VinePlant;
 import com.plantmanager.service.PlantImageService;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -25,8 +28,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 public class PlantDialogController {
+
+    private static final List<String> ALL_TYPES = List.of("Fruit", "Flower", "Herb", "Vegetable", "Tree", "Vine");
 
     @FXML private TextField nameField;
     @FXML private TextField speciesField;
@@ -35,7 +41,12 @@ public class PlantDialogController {
     @FXML private RadioButton fruitRadio;
     @FXML private RadioButton flowerRadio;
     @FXML private RadioButton herbRadio;
+    @FXML private RadioButton vegetableRadio;
+    @FXML private RadioButton treeRadio;
+    @FXML private RadioButton vineRadio;
     @FXML private ToggleGroup plantTypeGroup;
+
+    @FXML private ComboBox<String> categoryCombo;
 
     @FXML private ImageView iconPreview;
     @FXML private ComboBox<PlantIcon> iconCombo;
@@ -53,6 +64,19 @@ public class PlantDialogController {
     @FXML private TextArea culinaryUseArea;
     @FXML private CheckBox medicinalCheck;
 
+    @FXML private VBox vegetableFields;
+    @FXML private ComboBox<String> rootTypeCombo;
+    @FXML private TextField daysToHarvestField;
+
+    @FXML private VBox treeFields;
+    @FXML private TextField maxHeightField;
+    @FXML private TextField canopySpreadField;
+
+    @FXML private VBox vineFields;
+    @FXML private ComboBox<String> climbingSupportCombo;
+    @FXML private ComboBox<String> growthRateCombo;
+    @FXML private TextField maxVineLengthField;
+
     @FXML private Label validationLabel;
 
     private Plant existingPlant;
@@ -69,6 +93,15 @@ public class PlantDialogController {
         bloomColorCombo.getItems().addAll("Red", "Pink", "White", "Yellow", "Purple", "Orange", "Mixed");
         bloomColorCombo.setValue("Mixed");
 
+        rootTypeCombo.getItems().addAll("Taproot", "Fibrous", "Tuber", "Bulb", "Rhizome");
+        rootTypeCombo.setValue("Taproot");
+
+        climbingSupportCombo.getItems().addAll("Trellis", "Arbor", "Wall", "Ground Cover", "Pergola");
+        climbingSupportCombo.setValue("Trellis");
+
+        growthRateCombo.getItems().addAll("Slow", "Medium", "Fast");
+        growthRateCombo.setValue("Medium");
+
         plantedDatePicker.setValue(LocalDate.now());
         iconPreview.setFitWidth(64);
         iconPreview.setFitHeight(64);
@@ -77,6 +110,7 @@ public class PlantDialogController {
         plantTypeGroup.selectedToggleProperty().addListener((obs, old, selected) -> {
             updateVisibleFields();
             refreshIconOptions(false);
+            refreshCategoryOptions();
         });
 
         iconCombo.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
@@ -88,6 +122,7 @@ public class PlantDialogController {
 
         updateVisibleFields();
         refreshIconOptions(true);
+        refreshCategoryOptions();
     }
 
     public void setExistingPlant(Plant plant) {
@@ -125,7 +160,29 @@ public class PlantDialogController {
                 herbRadio.setSelected(true);
                 culinaryUseArea.setText(herb.getCulinaryUse());
                 medicinalCheck.setSelected(herb.isMedicinal());
+            } else if (plant instanceof VegetablePlant veg) {
+                vegetableRadio.setSelected(true);
+                rootTypeCombo.setValue(veg.getRootType());
+                daysToHarvestField.setText(String.valueOf(veg.getDaysToHarvest()));
+            } else if (plant instanceof TreePlant tree) {
+                treeRadio.setSelected(true);
+                maxHeightField.setText(String.valueOf(tree.getMaxHeight()));
+                canopySpreadField.setText(String.valueOf(tree.getCanopySpread()));
+            } else if (plant instanceof VinePlant vine) {
+                vineRadio.setSelected(true);
+                climbingSupportCombo.setValue(vine.getClimbingSupport());
+                growthRateCombo.setValue(vine.getGrowthRate());
+                maxVineLengthField.setText(String.valueOf(vine.getMaxVineLength()));
             }
+
+            refreshCategoryOptions();
+            for (String cat : plant.getCategories()) {
+                if (!cat.equals(plant.getPlantType())) {
+                    categoryCombo.setValue(cat);
+                    break;
+                }
+            }
+
             refreshIconOptions(false);
         }
     }
@@ -152,9 +209,27 @@ public class PlantDialogController {
         } else if (flowerRadio.isSelected()) {
             plant = new FlowerPlant(id, name, species, plantedDate,
                     bloomColorCombo.getValue(), perennialCheck.isSelected());
-        } else {
+        } else if (herbRadio.isSelected()) {
             plant = new HerbPlant(id, name, species, plantedDate,
                     culinaryUseArea.getText().trim(), medicinalCheck.isSelected());
+        } else if (vegetableRadio.isSelected()) {
+            plant = new VegetablePlant(id, name, species, plantedDate,
+                    rootTypeCombo.getValue(),
+                    Integer.parseInt(daysToHarvestField.getText().trim()));
+        } else if (treeRadio.isSelected()) {
+            plant = new TreePlant(id, name, species, plantedDate,
+                    Double.parseDouble(maxHeightField.getText().trim()),
+                    Double.parseDouble(canopySpreadField.getText().trim()));
+        } else {
+            plant = new VinePlant(id, name, species, plantedDate,
+                    climbingSupportCombo.getValue(),
+                    growthRateCombo.getValue(),
+                    Double.parseDouble(maxVineLengthField.getText().trim()));
+        }
+
+        String secondaryCat = categoryCombo.getValue();
+        if (secondaryCat != null && !secondaryCat.isEmpty()) {
+            plant.addCategory(secondaryCat);
         }
 
         if (pendingCustomPhoto != null) {
@@ -214,8 +289,34 @@ public class PlantDialogController {
         nameField.getScene().getWindow().hide();
     }
 
+    private void refreshCategoryOptions() {
+        String primaryType = fruitRadio.isSelected() ? "Fruit"
+                : flowerRadio.isSelected() ? "Flower"
+                : herbRadio.isSelected() ? "Herb"
+                : vegetableRadio.isSelected() ? "Vegetable"
+                : treeRadio.isSelected() ? "Tree"
+                : "Vine";
+
+        String current = categoryCombo.getValue();
+        categoryCombo.setItems(FXCollections.observableArrayList(
+                ALL_TYPES.stream()
+                        .filter(t -> !t.equals(primaryType))
+                        .toList()
+        ));
+        if (current != null && !current.equals(primaryType) && ALL_TYPES.contains(current)) {
+            categoryCombo.setValue(current);
+        } else {
+            categoryCombo.setValue(null);
+        }
+    }
+
     private void refreshIconOptions(boolean selectDefault) {
-        String type = fruitRadio.isSelected() ? "Fruit" : flowerRadio.isSelected() ? "Flower" : "Herb";
+        String type = fruitRadio.isSelected() ? "Fruit"
+                : flowerRadio.isSelected() ? "Flower"
+                : herbRadio.isSelected() ? "Herb"
+                : vegetableRadio.isSelected() ? "Vegetable"
+                : treeRadio.isSelected() ? "Tree"
+                : "Vine";
         PlantIcon current = iconCombo.getValue();
         iconCombo.setItems(FXCollections.observableArrayList(
                 Arrays.stream(PlantIcon.values())
@@ -277,6 +378,61 @@ public class PlantDialogController {
                 showValidationWarning("Culinary use is required.");
                 return false;
             }
+        } else if (vegetableRadio.isSelected()) {
+            if (rootTypeCombo.getValue() == null) {
+                showValidationWarning("Root type is required.");
+                return false;
+            }
+            try {
+                int days = Integer.parseInt(daysToHarvestField.getText().trim());
+                if (days < 0) {
+                    showValidationWarning("Days to harvest cannot be negative.");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                showValidationWarning("Days to harvest must be a valid number.");
+                return false;
+            }
+        } else if (treeRadio.isSelected()) {
+            try {
+                double h = Double.parseDouble(maxHeightField.getText().trim());
+                if (h < 0) {
+                    showValidationWarning("Max height cannot be negative.");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                showValidationWarning("Max height must be a valid number.");
+                return false;
+            }
+            try {
+                double s = Double.parseDouble(canopySpreadField.getText().trim());
+                if (s < 0) {
+                    showValidationWarning("Canopy spread cannot be negative.");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                showValidationWarning("Canopy spread must be a valid number.");
+                return false;
+            }
+        } else if (vineRadio.isSelected()) {
+            if (climbingSupportCombo.getValue() == null) {
+                showValidationWarning("Climbing support is required.");
+                return false;
+            }
+            if (growthRateCombo.getValue() == null) {
+                showValidationWarning("Growth rate is required.");
+                return false;
+            }
+            try {
+                double l = Double.parseDouble(maxVineLengthField.getText().trim());
+                if (l < 0) {
+                    showValidationWarning("Max vine length cannot be negative.");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                showValidationWarning("Max vine length must be a valid number.");
+                return false;
+            }
         }
 
         return true;
@@ -298,5 +454,11 @@ public class PlantDialogController {
         flowerFields.setManaged(flowerRadio.isSelected());
         herbFields.setVisible(herbRadio.isSelected());
         herbFields.setManaged(herbRadio.isSelected());
+        vegetableFields.setVisible(vegetableRadio.isSelected());
+        vegetableFields.setManaged(vegetableRadio.isSelected());
+        treeFields.setVisible(treeRadio.isSelected());
+        treeFields.setManaged(treeRadio.isSelected());
+        vineFields.setVisible(vineRadio.isSelected());
+        vineFields.setManaged(vineRadio.isSelected());
     }
 }

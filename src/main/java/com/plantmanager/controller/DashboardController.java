@@ -59,6 +59,9 @@ public class DashboardController {
     private static final String TYPE_FRUIT = "#40916c";
     private static final String TYPE_FLOWER = "#e9c46a";
     private static final String TYPE_HERB = "#457b9d";
+    private static final String TYPE_VEGETABLE = "#e67e22";
+    private static final String TYPE_TREE = "#27ae60";
+    private static final String TYPE_VINE = "#8e44ad";
     private static final String DISEASE_COLOR = "#e76f51";
 
     @FXML
@@ -402,6 +405,9 @@ public class DashboardController {
             case "Fruit" -> TYPE_FRUIT;
             case "Flower" -> TYPE_FLOWER;
             case "Herb" -> TYPE_HERB;
+            case "Vegetable" -> TYPE_VEGETABLE;
+            case "Tree" -> TYPE_TREE;
+            case "Vine" -> TYPE_VINE;
             default -> TYPE_FRUIT;
         };
     }

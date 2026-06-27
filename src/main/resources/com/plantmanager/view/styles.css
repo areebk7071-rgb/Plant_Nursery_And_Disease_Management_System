@@ -634,3 +634,177 @@
     -fx-border-color: #dde8dd;
     -fx-border-width: 1 0 0 0;
 }
+
+/* ── AI Chat Interface ── */
+.ai-root {
+    -fx-background-color: #e8f0e8;
+    -fx-font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+.ai-header {
+    -fx-background-color: linear-gradient(to right, #1b4332, #2d6a4f);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 6, 0, 0, 2);
+}
+
+.ai-header-icon {
+    -fx-font-size: 28px;
+}
+
+.ai-header-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.ai-header-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #b7e4c7;
+}
+
+.ai-provider-tag {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-radius: 12;
+    -fx-padding: 4 12;
+    -fx-font-size: 11px;
+    -fx-text-fill: #d8f3dc;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.25);
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+.ai-provider-tag:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.25);
+}
+
+.ai-chat-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.ai-chat-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.ai-chat-scroll .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8;
+}
+
+.ai-chat-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: #c8dcc4;
+    -fx-background-radius: 4;
+}
+
+.ai-chat-scroll .scroll-bar:vertical .increment-button,
+.ai-chat-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.ai-chat-container {
+    -fx-background-color: transparent;
+}
+
+.ai-input-area {
+    -fx-background-color: white;
+    -fx-border-color: #d8e2dc;
+    -fx-border-width: 1 0 0 0;
+}
+
+.ai-input-field {
+    -fx-background-color: #f0f4f1;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: #d8e2dc;
+    -fx-border-width: 1;
+    -fx-padding: 8 16;
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: #95a5a6;
+}
+
+.ai-input-field:focused {
+    -fx-border-color: #40916c;
+    -fx-background-color: white;
+}
+
+.ai-send-btn {
+    -fx-background-color: #40916c;
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-padding: 8 20;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+
+.ai-send-btn:hover {
+    -fx-background-color: #2d6a4f;
+}
+
+.ai-send-btn:disabled {
+    -fx-background-color: #b7e4c7;
+}
+
+.ai-upload-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #40916c;
+    -fx-background-radius: 20;
+    -fx-padding: 8 10;
+    -fx-cursor: hand;
+    -fx-font-size: 18px;
+    -fx-border-color: transparent;
+}
+
+.ai-upload-btn:hover {
+    -fx-background-color: #e8f5e9;
+}
+
+.ai-settings-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #5c6f63;
+    -fx-background-radius: 20;
+    -fx-padding: 8 10;
+    -fx-cursor: hand;
+    -fx-font-size: 16px;
+    -fx-border-color: transparent;
+}
+
+.ai-settings-btn:hover {
+    -fx-background-color: #e8f5e9;
+}
+
+.ai-image-preview-box {
+    -fx-background-color: #f4f8f4;
+    -fx-border-color: #d8e2dc;
+    -fx-border-width: 0 0 1 0;
+}
+
+.ai-image-preview {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #c8dcc4;
+    -fx-border-width: 1;
+}
+
+.ai-image-filename {
+    -fx-font-size: 12px;
+    -fx-text-fill: #2d6a4f;
+    -fx-font-weight: bold;
+}
+
+.ai-image-clear {
+    -fx-background-color: transparent;
+    -fx-text-fill: #95a5a6;
+    -fx-font-size: 14px;
+    -fx-padding: 2 6;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-background-radius: 10;
+}
+
+.ai-image-clear:hover {
+    -fx-background-color: #fce4e4;
+    -fx-text-fill: #c0392b;
+}

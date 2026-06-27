@@ -13,7 +13,7 @@ A JavaFX desktop application for managing garden plants, tracking diseases, and 
 ## ✨ Features
 
 | Feature | Description |
-|---|---|
+|---|---|---|
 | 🔐 Login System | Password-hashed authentication with session management |
 | 🌱 Plant CRUD | Add, edit, delete Fruit, Flower, and Herb plants with type-specific fields |
 | 🦠 Disease Library | 8 predefined diseases with symptoms, causative agents, and treatment plans |
@@ -24,6 +24,8 @@ A JavaFX desktop application for managing garden plants, tracking diseases, and 
 | 📄 PDF Export | Generate a printable Garden Health Report via PDFBox |
 | 📱 QR Share | Share exported files via local QR code server |
 | 💾 CSV Persistence | All data stored in flat CSV files — no database setup needed |
+| 🤖 AI Plant Advisor | Built-in free AI chat for plant care questions (zero config) |
+| 📷 Plant Identification | Upload a photo to identify plants via PlantNet API |
 
 ---
 
@@ -89,9 +91,14 @@ src/main/java/com/plantmanager/
 │   ├── TreatmentPanelController.java
 │   ├── TreatmentDialogController.java
 │   ├── AssignDiseaseDialogController.java
-│   └── AddDiseaseDialogController.java
+│   ├── AddDiseaseDialogController.java
+│   ├── AiController.java               # AI chat & plant identification
+│   └── AiSettingsController.java       # AI provider configuration
 │
 ├── service/                            # Business logic layer
+│   ├── AiService.java                  # AI chat (OpenAI-compatible)
+│   ├── PlantNetService.java            # Plant identification from images
+│   ├── ConfigPersistence.java          # Settings save/load
 │   ├── AuthService.java
 │   ├── PasswordHasher.java
 │   ├── TreatmentTrackingService.java
@@ -120,6 +127,8 @@ src/main/resources/com/plantmanager/view/
 ├── treatment-panel.fxml
 ├── assign-disease-dialog.fxml
 ├── add-disease-dialog.fxml
+├── ai-dialog.fxml
+├── ai-settings-dialog.fxml
 └── styles.css
 
 plants.csv                  # Plant data (auto-created on first run)
@@ -156,6 +165,9 @@ On first launch, a default user is created automatically:
 ### First Launch Behaviour
 - If `plants.csv` doesn't exist, four sample plants are seeded (Tomato, Rose, Basil, Apple Tree).
 - If `diseases.csv` doesn't exist, 8 diseases are loaded from the hardcoded `DiseaseLibrary` defaults.
+- AI chat works immediately with the built-in free provider (no API key needed).
+- Plant identification from photos works out of the box using AI vision.
+- For more accurate identification, add a free PlantNet API key at https://my.plantnet.org/ in the AI Settings dialog.
 
 ---
 
@@ -187,6 +199,7 @@ id,plantId,plantName,plantType,diseaseName,treatmentName,durationDays,startDate,
 | Apache PDFBox | 3.0.2 | PDF report generation |
 | ZXing Core | 3.5.3 | QR code generation |
 | ZXing JavaSE | 3.5.3 | QR code rendering |
+| Java HTTP Client | (built-in) | AI chat & PlantNet API calls |
 
 ---
 

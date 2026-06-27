@@ -7,7 +7,7 @@
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.plantmanager.controller.PlantDialogController"
-      spacing="12" prefWidth="480">
+      spacing="12" prefWidth="540">
 
     <padding>
         <Insets top="16" right="16" bottom="16" left="16"/>
@@ -37,10 +37,19 @@
         <ToggleGroup fx:id="plantTypeGroup"/>
     </fx:define>
 
-    <HBox spacing="16">
+    <FlowPane hgap="12" vgap="6">
         <RadioButton fx:id="fruitRadio" text="Fruit" toggleGroup="$plantTypeGroup" selected="true"/>
         <RadioButton fx:id="flowerRadio" text="Flower" toggleGroup="$plantTypeGroup"/>
         <RadioButton fx:id="herbRadio" text="Herb" toggleGroup="$plantTypeGroup"/>
+        <RadioButton fx:id="vegetableRadio" text="Vegetable" toggleGroup="$plantTypeGroup"/>
+        <RadioButton fx:id="treeRadio" text="Tree" toggleGroup="$plantTypeGroup"/>
+        <RadioButton fx:id="vineRadio" text="Vine" toggleGroup="$plantTypeGroup"/>
+    </FlowPane>
+
+    <Label text="Secondary Category (optional)" styleClass="subsection-title"/>
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <ComboBox fx:id="categoryCombo" prefWidth="250" promptText="None"/>
+        <Label text="e.g. a Fruiting Tree = Tree + Fruit" styleClass="chart-hint"/>
     </HBox>
 
     <Label text="Icon / Photo" styleClass="subsection-title"/>
@@ -102,6 +111,53 @@
                       GridPane.rowIndex="0" GridPane.columnIndex="1"/>
             <Label text="Medicinal:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
             <CheckBox fx:id="medicinalCheck" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        </GridPane>
+    </VBox>
+
+    <!-- Vegetable-specific fields -->
+    <VBox fx:id="vegetableFields" spacing="8" visible="false" managed="false">
+        <Label text="Vegetable Details" styleClass="subsection-title"/>
+        <GridPane hgap="10" vgap="8">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" prefWidth="120"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            <Label text="Root Type:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="rootTypeCombo" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity"/>
+            <Label text="Days to Harvest:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="daysToHarvestField" text="60" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        </GridPane>
+    </VBox>
+
+    <!-- Tree-specific fields -->
+    <VBox fx:id="treeFields" spacing="8" visible="false" managed="false">
+        <Label text="Tree Details" styleClass="subsection-title"/>
+        <GridPane hgap="10" vgap="8">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" prefWidth="120"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            <Label text="Max Height (m):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="maxHeightField" text="5" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <Label text="Canopy Spread (m):" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="canopySpreadField" text="3" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        </GridPane>
+    </VBox>
+
+    <!-- Vine-specific fields -->
+    <VBox fx:id="vineFields" spacing="8" visible="false" managed="false">
+        <Label text="Vine Details" styleClass="subsection-title"/>
+        <GridPane hgap="10" vgap="8">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100" prefWidth="120"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            <Label text="Climbing Support:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="climbingSupportCombo" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity"/>
+            <Label text="Growth Rate:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="growthRateCombo" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity"/>
+            <Label text="Max Vine Length (m):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="maxVineLengthField" text="3" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
         </GridPane>
     </VBox>
 
